@@ -21,7 +21,7 @@
   .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
   .brand h1{font-size:17px;font-weight:800;letter-spacing:.06em}
   .brand h1 .u{color:var(--gold)}
-  .brand .sub{font-size:11px;color:var(--mut);font-family:var(--mono);letter-spacing:.04em}
+  .brand .sub{font-size:16px;font-weight:700;color:var(--gold);font-family:var(--sans);letter-spacing:.02em;display:block;width:100%;margin-top:2px}
   .tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto}
   .tab{flex:1;min-width:70px;text-align:center;padding:9px 4px;font-size:12px;font-weight:700;color:var(--mut);border:none;background:transparent;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--sans);white-space:nowrap}
   .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
@@ -183,7 +183,7 @@
   <div id="list"></div>
 </main>
 <footer>
-  <b>Tài khoản ảo — không phải tiền thật.</b> Crypto từ Binance (miễn phí). Vàng/Forex/CK Mỹ từ Twelve Data (free 8 gọi/phút, app tự giãn nhịp). CK Mỹ chỉ chạy giờ giao dịch Mỹ.
+  Crypto từ Binance (miễn phí). Vàng/Forex/CK Mỹ từ Twelve Data (free 8 gọi/phút, app tự giãn nhịp). CK Mỹ chỉ chạy giờ giao dịch Mỹ.
   Đòn bẩy 1x–20x có tính thanh lý (liquidation) gần mức mất hết ký quỹ. Long/Short đều được, nhưng nên ưu tiên thuận xu thế: Long khi giá trên EMA34&amp;89, Short khi dưới.
   Mọi danh mục &amp; tài khoản lưu trên thiết bị. Kỷ luật là chén thánh.
 </footer>
@@ -247,7 +247,17 @@ const LIBRARY = {
   },
   stock: {
     source:'twelve', label:'CK Mỹ', suffix:'',
-    list:['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA','AMD','NFLX','INTC','QCOM','AVGO','ORCL','CRM','ADBE','CSCO','TXN','MU','PYPL','SQ','COIN','MSTR','PLTR','SHOP','UBER','ABNB','SNAP','PINS','ROKU','SOFI','HOOD','RIVN','LCID','NIO','F','GM','BA','DIS','NKE','SBUX','MCD','KO','PEP','WMT','COST','HD','JPM','BAC','GS','MS','V','MA','BRK.B','UNH','JNJ','PFE','MRNA','XOM','CVX','SPY','QQQ','DIA','IWM']
+    list:[
+      'AAPL','MSFT','NVDA','GOOGL','GOOG','AMZN','META','TSLA','AVGO','ORCL','ADBE','CRM','AMD','INTC','QCOM','CSCO','TXN','MU','IBM','NOW','INTU','AMAT','LRCX','KLAC','ADI','MRVL','SNPS','CDNS','PANW','CRWD','FTNT','ZS','DDOG','SNOW','NET','MDB','TEAM','WDAY','ADSK','ANSS',
+      'NFLX','UBER','ABNB','SHOP','SQ','PYPL','SPOT','PINS','SNAP','RBLX','ROKU','DASH','LYFT','ZM','DOCU','TWLO','OKTA','PLTR','U','PATH','AI','SOFI','HOOD','COIN','MSTR','MARA','RIOT','CLSK',
+      'RIVN','LCID','NIO','XPEV','LI','F','GM',
+      'ASML','TSM','ARM','SMCI','ON','MCHP','STM','GFS',
+      'JPM','BAC','WFC','C','GS','MS','SCHW','BLK','AXP','V','MA','COF','USB','PNC','TFC','BK',
+      'UNH','JNJ','LLY','PFE','MRK','ABBV','TMO','ABT','DHR','BMY','AMGN','GILD','CVS','MRNA','BNTX','REGN','VRTX','ISRG','MDT','SYK',
+      'WMT','COST','HD','LOW','TGT','NKE','SBUX','MCD','KO','PEP','PG','CL','PM','MO','DIS','CMCSA','BKNG','MAR',
+      'BA','CAT','GE','HON','UPS','FDX','LMT','RTX','DE','MMM','XOM','CVX','COP','SLB','OXY','ENPH','FSLR','NEE','DUK',
+      'SPY','QQQ','DIA','IWM','VTI','VOO','XLK','XLF','XLE','XLV','SMH','SOXX','ARKK','GLD','SLV','TLT','HYG','VXX'
+    ]
   }
 };
 const BINANCE='https://api.binance.com/api/v3/klines';
@@ -277,7 +287,7 @@ function defWatchlists(){
 }
 function load(){
   try{
-    tdKey=localStorage.getItem('ug_tdkey')||'';
+    tdKey=localStorage.getItem('ug_tdkey')||'a47179c6317e4dcaace852aa64da73ef';
     watchlists=JSON.parse(localStorage.getItem('ug_wl')||'null')||defWatchlists();
     activeWl=JSON.parse(localStorage.getItem('ug_actwl')||'null')||{};
     for(const m in LIBRARY){ if(!watchlists[m])watchlists[m]={}; if(!activeWl[m]||!watchlists[m][activeWl[m]])activeWl[m]=Object.keys(watchlists[m])[0]||null; }
