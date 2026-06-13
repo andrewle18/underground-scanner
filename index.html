@@ -595,9 +595,19 @@ function depositFunds(){
   if(s===null)return;
   const amt=parseFloat(String(s).replace(/[^0-9.]/g,''));
   if(!isFinite(amt)||amt<=0){toast('Số tiền không hợp lệ');return;}
-  paper.balance+=amt; paper.start+=amt; // cộng cả vốn gốc để % lời/lỗ không bị méo
+  paper.balance+=amt; paper.start+=amt;
   persistPaper(); updateMini(); renderPaper();
   toast('Đã nạp +'+money(amt)+' $');
+}
+function withdrawFunds(){
+  const s=prompt('Rút bao nhiêu $? (khả dụng: '+money(paper.balance)+')', '100000');
+  if(s===null)return;
+  const amt=parseFloat(String(s).replace(/[^0-9.]/g,''));
+  if(!isFinite(amt)||amt<=0){toast('Số tiền không hợp lệ');return;}
+  if(amt>paper.balance){toast('Vượt số dư khả dụng ('+money(paper.balance)+'). Ký quỹ đang dùng không rút được khi lệnh chưa đóng.');return;}
+  paper.balance-=amt; paper.start=Math.max(0,paper.start-amt);
+  persistPaper(); updateMini(); renderPaper();
+  toast('Đã rút −'+money(amt)+' $');
 }
 function renderPaper(){
   const list=$('list');
@@ -614,7 +624,7 @@ function renderPaper(){
     <div class="pa"><div class="k">Tổng L/L</div><div class="v ${totPnl>=0?'up':'down'}">${totPnl>=0?'+':''}${money(totPnl)} (${totPct>=0?'+':''}${totPct.toFixed(1)}%)</div></div>
     <div class="pa"><div class="k">Win rate</div><div class="v ${winRate>=50?'up':''}">${wins}/${losses} · ${winRate.toFixed(0)}%</div></div>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn gold" style="flex:1" onclick="scanCurrent()">Cập nhật giá</button><button class="btn" onclick="depositFunds()">＋ Nạp tiền</button><button class="btn" onclick="resetPaper()">Reset</button></div>`;
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"><button class="btn gold" style="flex:1;min-width:120px" onclick="scanCurrent()">Cập nhật giá</button><button class="btn" onclick="depositFunds()">＋ Nạp</button><button class="btn" onclick="withdrawFunds()">− Rút</button><button class="btn" onclick="resetPaper()">Reset</button></div>`;
   if(!paper.positions.length&&!paper.history.length){ html+='<div class="empty">Chưa có lệnh nào.<br>Mở một mã ở tab thị trường → bấm <b>LONG</b> hoặc <b>SHORT</b>.</div>'; list.innerHTML=html;updateCounts();return; }
   if(paper.positions.length){
     html+='<div style="font-size:12px;color:var(--mut);margin:6px 0 8px;font-family:var(--mono)">ĐANG MỞ ('+paper.positions.length+')</div>';
