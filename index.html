@@ -98,7 +98,7 @@
   /* Modal chung */
   .modal{position:fixed;inset:0;background:rgba(5,8,11,.82);z-index:200;display:none;align-items:flex-end;justify-content:center}
   .modal.show{display:flex}
-  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:540px;max-height:92vh;overflow:auto;padding:18px 16px 26px}
+  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:540px;max-height:88vh;max-height:88dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:18px 16px calc(20px + env(safe-area-inset-bottom));position:relative}
   @media(min-width:580px){.modal{align-items:center}.sheet{border-radius:18px}}
   .sheet h3{font-size:16px;margin-bottom:4px}
   .sheet .symname{font-family:var(--mono);font-weight:800}
@@ -117,8 +117,8 @@
   .levval{font-family:var(--mono);font-weight:800;color:var(--gold);min-width:42px;text-align:right}
   .calcline{font-size:12px;color:var(--mut);margin:10px 0;font-family:var(--mono);line-height:1.6}
   .calcline b{color:var(--gold)}
-  .modal-actions{display:flex;gap:8px;margin-top:14px}
-  .modal-actions .btn{flex:1;padding:11px}
+  .modal-actions{display:flex;gap:8px;margin-top:14px;position:sticky;bottom:0;background:var(--panel);padding-top:12px}
+  .modal-actions .btn{flex:1;padding:13px;font-size:15px}
   /* Thư viện mã */
   .libsearch{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:10px;font-size:14px;margin-bottom:10px}
   .libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;max-height:46vh;overflow:auto;margin-bottom:6px}
@@ -493,14 +493,16 @@ function openTrade(mkt,sym,side){
   setSide(side);
   const price=r.price; const p=r.plan;
   let sl,tp1,tp2;
-  if(side==='long'){ sl=p?p.sl:price*0.97; tp1=p?p.tp1:price*1.03; tp2=p?p.tp2:price*1.06; }
+  if(side==='long'){ sl=(p&&p.side==='long')?p.sl:price*0.97; tp1=(p&&p.side==='long')?p.tp1:price*1.03; tp2=(p&&p.side==='long')?p.tp2:price*1.06; }
   else { sl=price*1.03; tp1=price*0.97; tp2=price*0.94; }
   const lev=Math.max(1,Math.min(20,+($('defLev').value||1)));
   $('mSym').textContent=sym; $('mEntry').value=round(price); $('mSL').value=round(sl); $('mTP1').value=round(tp1); $('mTP2').value=round(tp2);
   $('mLev').value=lev; $('mLevVal').textContent=lev+'x';
-  // ký quỹ mặc định = risk 2% / khoảng cách SL, quy về margin theo đòn bẩy
-  const dist=Math.abs(price-sl); const riskAmt=capRisk(); const qty=dist>0?riskAmt/dist:0; const notional=qty*price; const margin=notional/lev;
-  $('mMargin').value=Math.min(Math.max(margin,1),paper.balance).toFixed(2);
+  // ký quỹ mặc định theo quy tắc rủi ro; nếu vượt số dư thì lấy số dư; luôn >= 1 và không vượt số dư
+  const dist=Math.abs(price-sl); const riskAmt=capRisk(); const qty=dist>0?riskAmt/dist:0; const notional=qty*price; let margin=lev>0?notional/lev:notional;
+  if(!isFinite(margin)||margin<=0) margin=Math.min(paper.balance, equity()*0.05); // fallback 5% equity
+  margin=Math.max(1, Math.min(margin, paper.balance));
+  $('mMargin').value=margin.toFixed(2);
   $('tradeModal').classList.add('show'); mCalc();
 }
 function round(n){const a=Math.abs(n);const d=a>=1000?2:a>=1?4:a>=0.01?6:8;return Number(n.toFixed(d));}
