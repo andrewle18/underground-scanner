@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A0F14">
-<title>Underground Scanner — Đa thị trường</title>
+<title>Underground Scanner — Sàn demo đa thị trường</title>
 <style>
   :root{
     --bg:#0A0F14; --panel:#111922; --panel2:#0E141C; --line:#1E2A36;
@@ -17,30 +17,31 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.45;padding-bottom:60px}
-  header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#0A0F14 80%,rgba(10,15,20,.92));border-bottom:1px solid var(--line);padding:12px 14px 0}
+  header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#0A0F14 82%,rgba(10,15,20,.92));border-bottom:1px solid var(--line);padding:12px 14px 0}
   .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
   .brand h1{font-size:17px;font-weight:800;letter-spacing:.06em}
   .brand h1 .u{color:var(--gold)}
   .brand .sub{font-size:11px;color:var(--mut);font-family:var(--mono);letter-spacing:.04em}
-  .tabs{display:flex;gap:4px;margin-top:10px}
-  .tab{flex:1;text-align:center;padding:9px 6px;font-size:13px;font-weight:700;color:var(--mut);border:none;background:transparent;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--sans)}
+  .tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto}
+  .tab{flex:1;min-width:70px;text-align:center;padding:9px 4px;font-size:12px;font-weight:700;color:var(--mut);border:none;background:transparent;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--sans);white-space:nowrap}
   .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
-  .tab .cnt{font-size:10px;font-family:var(--mono);opacity:.9;margin-left:3px;color:var(--up)}
+  .tab .cnt{font-size:10px;font-family:var(--mono);opacity:.9;margin-left:2px;color:var(--up)}
   .toolbar{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;align-items:center}
-  .toolbar input[type=text]{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:13px;flex:1;min-width:120px;text-transform:uppercase}
+  .wlsel{flex:1;min-width:130px;background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--sans)}
   .btn{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
   .btn:active{transform:scale(.97)}
   .btn.gold{background:var(--gold);color:#0A0F14;border-color:var(--gold)}
   .btn.toggleon{border-color:var(--up);color:var(--up)}
+  .btn.sm{padding:6px 9px;font-size:12px}
   .meta{font-size:11px;color:var(--mut);font-family:var(--mono);padding-bottom:10px;display:flex;gap:14px;flex-wrap:wrap}
-  main{max-width:920px;margin:0 auto;padding:12px 12px 0}
+  main{max-width:960px;margin:0 auto;padding:12px 12px 0}
   .keybar{display:none;background:rgba(232,179,60,.08);border:1px solid rgba(232,179,60,.35);border-radius:12px;padding:12px;margin-bottom:14px}
   .keybar.show{display:block}
   .keybar p{font-size:12px;color:var(--mut);margin-bottom:8px;line-height:1.5}
   .keybar p b{color:var(--gold)} .keybar a{color:var(--blue)}
   .keyrow{display:flex;gap:8px}
   .keyrow input{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:9px;font-family:var(--mono);font-size:12px}
-  .capital{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .capital{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
   .capital label{font-size:11px;color:var(--mut);display:block;margin-bottom:4px;letter-spacing:.03em}
   .capital input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font-family:var(--mono);font-size:14px}
   .capital .riskline{grid-column:1/-1;font-size:12px;color:var(--mut)}
@@ -88,9 +89,61 @@
   .rules b{color:var(--txt)}
   .rules .ok{color:var(--up)} .rules .no{color:var(--down)} .rules .wn{color:var(--warn)}
   .empty{padding:24px;text-align:center;color:var(--mut);font-size:13px}
-  footer{max-width:920px;margin:18px auto 0;padding:0 14px 20px;font-size:11px;color:var(--mut);line-height:1.7;border-top:1px solid var(--line);padding-top:12px}
+  .tradebtns{display:flex;gap:8px;margin-top:12px}
+  .btn.long{flex:1;background:rgba(43,216,150,.14);border-color:rgba(43,216,150,.5);color:var(--up);padding:11px}
+  .btn.short{flex:1;background:rgba(255,90,110,.12);border-color:rgba(255,90,110,.5);color:var(--down);padding:11px}
+  footer{max-width:960px;margin:18px auto 0;padding:0 14px 20px;font-size:11px;color:var(--mut);line-height:1.7;border-top:1px solid var(--line);padding-top:12px}
   footer b{color:var(--warn)}
-  .toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0A0F14;font-weight:700;font-size:13px;padding:10px 18px;border-radius:30px;z-index:100;display:none;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center}
+  .toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0A0F14;font-weight:700;font-size:13px;padding:10px 18px;border-radius:30px;z-index:300;display:none;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center}
+  /* Modal chung */
+  .modal{position:fixed;inset:0;background:rgba(5,8,11,.82);z-index:200;display:none;align-items:flex-end;justify-content:center}
+  .modal.show{display:flex}
+  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:540px;max-height:92vh;overflow:auto;padding:18px 16px 26px}
+  @media(min-width:580px){.modal{align-items:center}.sheet{border-radius:18px}}
+  .sheet h3{font-size:16px;margin-bottom:4px}
+  .sheet .symname{font-family:var(--mono);font-weight:800}
+  .sheet .hint{font-size:11px;color:var(--mut);margin-bottom:14px}
+  .sideseg{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .sideseg button{flex:1;padding:10px;background:var(--panel2);border:none;color:var(--mut);font-weight:800;font-family:var(--mono);cursor:pointer;font-size:13px}
+  .sideseg button.lon.act{background:rgba(43,216,150,.18);color:var(--up)}
+  .sideseg button.sho.act{background:rgba(255,90,110,.16);color:var(--down)}
+  .frm{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+  .frm .full{grid-column:1/-1}
+  .frm label{font-size:11px;color:var(--mut);display:block;margin-bottom:3px}
+  .frm input,.frm select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:9px;font-family:var(--mono);font-size:14px}
+  .frm input.sl{border-color:rgba(255,90,110,.4)} .frm input.tp{border-color:rgba(43,216,150,.4)} .frm input.en{border-color:rgba(232,179,60,.4)}
+  .levrow{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+  .levrow input[type=range]{flex:1}
+  .levval{font-family:var(--mono);font-weight:800;color:var(--gold);min-width:42px;text-align:right}
+  .calcline{font-size:12px;color:var(--mut);margin:10px 0;font-family:var(--mono);line-height:1.6}
+  .calcline b{color:var(--gold)}
+  .modal-actions{display:flex;gap:8px;margin-top:14px}
+  .modal-actions .btn{flex:1;padding:11px}
+  /* Thư viện mã */
+  .libsearch{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:10px;font-size:14px;margin-bottom:10px}
+  .libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;max-height:46vh;overflow:auto;margin-bottom:6px}
+  .libitem{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-family:var(--mono);font-size:12px;cursor:pointer;text-align:center;color:var(--txt)}
+  .libitem.sel{background:rgba(43,216,150,.16);border-color:var(--up);color:var(--up)}
+  .libgroup{grid-column:1/-1;font-size:11px;color:var(--mut);font-family:var(--mono);margin-top:6px;letter-spacing:.05em}
+  /* Ví ảo */
+  .pacc{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:10px}
+  .pacc .pa{text-align:center}
+  .pacc .pa .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+  .pacc .pa .v{font-family:var(--mono);font-size:16px;font-weight:800;margin-top:3px}
+  .pacc .pa .v.up{color:var(--up)} .pacc .pa .v.down{color:var(--down)} .pacc .pa .v.gold{color:var(--gold)}
+  .ptrade{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:10px}
+  .ptrade.open-pos{border-color:rgba(232,179,60,.35)}
+  .ptrade .ph{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .ptrade .psym{font-family:var(--mono);font-weight:700}
+  .ptrade .ppl{font-family:var(--mono);font-weight:800}
+  .ptrade .pmeta{font-size:11px;color:var(--mut);font-family:var(--mono);margin-top:6px;line-height:1.6}
+  .ptrade .pbar{height:6px;border-radius:4px;background:#22303d;margin-top:8px;position:relative;overflow:hidden}
+  .ptrade .pbar i{position:absolute;top:0;bottom:0}
+  .sidetag{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:5px;margin-left:6px;font-weight:800}
+  .sidetag.long{background:rgba(43,216,150,.16);color:var(--up)} .sidetag.short{background:rgba(255,90,110,.14);color:var(--down)}
+  .ptag{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:5px;margin-left:6px}
+  .ptag.win{background:rgba(43,216,150,.16);color:var(--up)} .ptag.loss{background:rgba(255,90,110,.14);color:var(--down)} .ptag.be{background:#1a2530;color:var(--mut)} .ptag.tp1{background:rgba(232,179,60,.16);color:var(--gold)} .ptag.liq{background:#3a0d12;color:var(--down)}
+  .pclose{font-size:11px;color:var(--down);cursor:pointer;font-family:var(--mono);opacity:.75}
   @media(max-width:480px){ canvas.chart{height:200px} }
 </style>
 </head>
@@ -98,18 +151,20 @@
 <header>
   <div class="brand">
     <h1>UNDERGROUND <span class="u">SCANNER</span></h1>
-    <span class="sub">EMA 34/89 · H4+H1 · Dow · Fibo</span>
+    <span class="sub">EMA 34/89 · H4+H1 · Sàn demo</span>
   </div>
   <div class="tabs">
-    <button class="tab active" data-mkt="crypto" onclick="switchTab('crypto')">Crypto <span class="cnt" id="cnt-crypto"></span></button>
-    <button class="tab" data-mkt="forex" onclick="switchTab('forex')">Vàng/Forex <span class="cnt" id="cnt-forex"></span></button>
-    <button class="tab" data-mkt="stock" onclick="switchTab('stock')">CK Mỹ <span class="cnt" id="cnt-stock"></span></button>
+    <button class="tab active" data-tab="crypto" onclick="switchTab('crypto')">Crypto <span class="cnt" id="cnt-crypto"></span></button>
+    <button class="tab" data-tab="forex" onclick="switchTab('forex')">Vàng/Forex <span class="cnt" id="cnt-forex"></span></button>
+    <button class="tab" data-tab="stock" onclick="switchTab('stock')">CK Mỹ <span class="cnt" id="cnt-stock"></span></button>
+    <button class="tab" data-tab="paper" onclick="switchTab('paper')">Tài khoản <span class="cnt" id="cnt-paper"></span></button>
   </div>
-  <div class="toolbar">
-    <input type="text" id="addSym" placeholder="Thêm mã..." autocomplete="off" onkeydown="if(event.key==='Enter')addSymbol()">
-    <button class="btn" onclick="addSymbol()">＋</button>
-    <button class="btn gold" id="btnScan" onclick="scanCurrent(true)">Quét</button>
-    <button class="btn" id="btnAuto" onclick="toggleAuto()">Tự quét: TẮT</button>
+  <div class="toolbar" id="mktToolbar">
+    <select class="wlsel" id="wlSelect" onchange="onWlChange()"></select>
+    <button class="btn sm" onclick="openLibrary()">＋ Mã</button>
+    <button class="btn sm" onclick="newWatchlist()">＋ Danh mục</button>
+    <button class="btn gold" id="btnScan" onclick="scanCurrent()">Quét</button>
+    <button class="btn" id="btnAuto" onclick="toggleAuto()">Auto: TẮT</button>
     <button class="btn" id="btnSound" onclick="toggleSound()">🔕</button>
   </div>
   <div class="meta"><span id="lastScan">Chưa quét</span><span id="scanState"></span></div>
@@ -119,50 +174,115 @@
     <p>Thị trường này dùng <b>Twelve Data</b>. Lấy API key miễn phí tại <a href="https://twelvedata.com" target="_blank">twelvedata.com</a> → đăng ký → Dashboard. Key chỉ lưu trên máy anh.</p>
     <div class="keyrow"><input type="text" id="tdKey" placeholder="Dán API key Twelve Data" autocomplete="off"><button class="btn gold" onclick="saveKey()">Lưu</button></div>
   </div>
-  <div class="capital">
-    <div><label>Vốn (USDT/$)</label><input type="number" id="capital" value="1000" min="1" oninput="recalcAll()"></div>
+  <div class="capital" id="riskPanel">
     <div><label>Rủi ro/lệnh (%)</label><input type="number" id="riskPct" value="2" min="0.1" max="10" step="0.1" oninput="recalcAll()"></div>
+    <div><label>Đòn bẩy mặc định</label><input type="number" id="defLev" value="1" min="1" max="20" step="1" oninput="persist()"></div>
     <div><label>Chu kỳ tự quét (giây)</label><input type="number" id="interval" value="120" min="30" step="10"></div>
-    <div class="riskline">Quy tắc 2%: mỗi lệnh chỉ mất tối đa <b id="riskUsd">20.00</b>. SL xa thì hạ volume, không nới SL.</div>
+    <div class="riskline">Ví ảo: <b id="equityMini">—</b> · Quy tắc 2%: mỗi lệnh chỉ mất tối đa <b id="riskUsd">—</b> tính trên equity. SL xa thì hạ vốn/đòn bẩy, không nới SL.</div>
   </div>
   <div id="list"></div>
 </main>
 <footer>
-  <b>Lưu ý:</b> Crypto từ Binance (miễn phí, không giới hạn). Vàng/Forex/CK Mỹ từ Twelve Data — gói free giới hạn 8 lần gọi/phút nên app tự xếp hàng quét chậm rãi (nhiều mã thì lâu hơn chứ không lỗi).
-  CK Mỹ chỉ chạy giờ giao dịch Mỹ. Mọi cài đặt &amp; danh sách mã lưu trên thiết bị.
-  Hệ thống: chỉ CANH MUA khi giá trên EMA 34&amp;89 ở cả H4 và H1 · hai khung mâu thuẫn = đứng ngoài · sideway = đứng ngoài · 3 SL liên tiếp = nghỉ · chốt 50% tại TP1 rồi dời SL về entry.
+  <b>Sàn demo — không phải tiền thật.</b> Crypto từ Binance (miễn phí). Vàng/Forex/CK Mỹ từ Twelve Data (free 8 gọi/phút, app tự giãn nhịp). CK Mỹ chỉ chạy giờ giao dịch Mỹ.
+  Đòn bẩy 1x–20x có tính thanh lý (liquidation) gần mức mất hết ký quỹ. Long/Short đều được, nhưng hệ thống Underground khuyến nghị chỉ thuận xu thế: Long khi giá trên EMA34&amp;89, Short khi dưới.
+  Mọi danh mục &amp; tài khoản lưu trên thiết bị. Kỷ luật là chén thánh.
 </footer>
 <div class="toast" id="toast"></div>
+
+<!-- Modal: thư viện mã -->
+<div class="modal" id="libModal">
+  <div class="sheet">
+    <h3>Thư viện mã — <span class="symname" id="libMktName"></span></h3>
+    <p class="hint">Chạm để chọn/bỏ mã cho danh mục <b id="libWlName"></b>. Mã đang chọn sáng xanh.</p>
+    <input type="text" class="libsearch" id="libSearch" placeholder="Tìm mã... (gõ để lọc, hoặc nhập mã mới rồi Enter)" oninput="renderLib()" onkeydown="if(event.key==='Enter')addCustomFromSearch()">
+    <div class="libgrid" id="libGrid"></div>
+    <div class="modal-actions"><button class="btn" onclick="closeLib()">Xong</button></div>
+  </div>
+</div>
+
+<!-- Modal: đặt lệnh ảo -->
+<div class="modal" id="tradeModal">
+  <div class="sheet">
+    <h3>Lệnh ảo — <span class="symname" id="mSym"></span></h3>
+    <p class="hint">Số liệu điền sẵn theo kế hoạch hệ thống, anh sửa được. Không dùng tiền thật.</p>
+    <div class="sideseg">
+      <button class="lon" id="segLong" onclick="setSide('long')">LONG (mua)</button>
+      <button class="sho" id="segShort" onclick="setSide('short')">SHORT (bán)</button>
+    </div>
+    <div class="frm">
+      <div class="full"><label>Giá vào (Entry)</label><input type="number" id="mEntry" class="en" step="any" oninput="mCalc()"></div>
+      <div><label>Stoploss</label><input type="number" id="mSL" class="sl" step="any" oninput="mCalc()"></div>
+      <div><label>TP1 (chốt 50%)</label><input type="number" id="mTP1" class="tp" step="any" oninput="mCalc()"></div>
+      <div><label>TP2 (phần còn lại)</label><input type="number" id="mTP2" class="tp" step="any" oninput="mCalc()"></div>
+      <div><label>Ký quỹ (margin $)</label><input type="number" id="mMargin" step="any" oninput="mCalc()"></div>
+    </div>
+    <div class="levrow"><label style="font-size:11px;color:var(--mut)">Đòn bẩy</label><input type="range" id="mLev" min="1" max="20" step="1" value="1" oninput="mCalc()"><span class="levval" id="mLevVal">1x</span></div>
+    <div class="calcline" id="mCalcLine"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Hủy</button>
+      <button class="btn gold" id="mConfirm" onclick="confirmTrade()">Mở lệnh</button>
+    </div>
+  </div>
+</div>
 <script>
-const MARKETS = {
-  crypto: { source:'binance', label:'Crypto', def:['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','LINKUSDT','DOGEUSDT','AVAXUSDT','MATICUSDT'] },
-  forex:  { source:'twelve',  label:'Vàng/Forex', def:['XAU/USD','XAG/USD','EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD'] },
-  stock:  { source:'twelve',  label:'CK Mỹ', def:['AAPL','MSFT','NVDA','TSLA','AMZN','GOOGL','META','AMD','NFLX','COIN'] }
+/* ===== THƯ VIỆN MÃ ===== */
+const LIBRARY = {
+  crypto: {
+    source:'binance', label:'Crypto', suffix:'USDT',
+    list:['BTC','ETH','BNB','SOL','XRP','ADA','DOGE','AVAX','MATIC','LINK','DOT','TRX','LTC','BCH','ATOM','UNI','XLM','ETC','FIL','APT','ARB','OP','NEAR','INJ','SUI','SEI','TIA','RUNE','AAVE','MKR','LDO','RNDR','IMX','GRT','SAND','MANA','AXS','GALA','FTM','ALGO','EGLD','FLOW','CHZ','ENJ','CRV','SNX','COMP','1INCH','DYDX','PEPE','SHIB','WIF','BONK','FLOKI','JUP','PYTH','ORDI','STX','KAS','TON','HBAR','VET','THETA','EOS','XTZ','NEO','IOTA','ZEC','DASH','QTUM','ONT','ZIL','WAVES','KSM','GMT','APE','LRC','BAT','ENS','MASK']
+  },
+  forex: {
+    source:'twelve', label:'Vàng/Forex', suffix:'',
+    list:['XAU/USD','XAG/USD','XPT/USD','EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','NZD/USD','USD/CAD','EUR/JPY','GBP/JPY','EUR/GBP','AUD/JPY','EUR/AUD','GBP/CHF','CAD/JPY','CHF/JPY','EUR/CHF','AUD/NZD','USD/SGD','USD/HKD','WTI/USD','BRENT/USD','NATGAS/USD']
+  },
+  stock: {
+    source:'twelve', label:'CK Mỹ', suffix:'',
+    list:['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA','AMD','NFLX','INTC','QCOM','AVGO','ORCL','CRM','ADBE','CSCO','TXN','MU','PYPL','SQ','COIN','MSTR','PLTR','SHOP','UBER','ABNB','SNAP','PINS','ROKU','SOFI','HOOD','RIVN','LCID','NIO','F','GM','BA','DIS','NKE','SBUX','MCD','KO','PEP','WMT','COST','HD','JPM','BAC','GS','MS','V','MA','BRK.B','UNH','JNJ','PFE','MRNA','XOM','CVX','SPY','QQQ','DIA','IWM']
+  }
 };
 const BINANCE='https://api.binance.com/api/v3/klines';
 const TWELVE='https://api.twelvedata.com/time_series';
-let cur='crypto', symbols={}, results={}, prevSignal={}, autoTimer=null, soundOn=false, scanning=false, tdKey='';
+
+/* ===== TRẠNG THÁI ===== */
+let cur='crypto', tdKey='', autoTimer=null, soundOn=false, scanning=false;
+let watchlists={}, activeWl={}, results={}, prevSignal={};
+let paper={ start:1000000, balance:1000000, positions:[], history:[] };
+let modalCtx=null, tradeSide='long';
 
 const $=id=>document.getElementById(id);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const cssId=s=>s.replace(/[^A-Za-z0-9]/g,'_');
 const fmt=n=>{if(n===null||n===undefined||isNaN(n))return'—';const a=Math.abs(n),d=a>=1000?2:a>=1?4:a>=0.01?6:8;return Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:d});};
+const money=n=>{if(n===null||n===undefined||isNaN(n))return'—';return Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});};
 function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',4200);}
 function beep(){if(!soundOn)return;try{const c=beep.c||(beep.c=new(window.AudioContext||window.webkitAudioContext)());const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.18,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.5);o.start();o.stop(c.currentTime+.5);}catch(e){}}
 
+/* ===== LƯU TRỮ ===== */
+function defWatchlists(){
+  return {
+    crypto:{ 'Top coin':['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT'], 'Layer 1':['ETHUSDT','SOLUSDT','ADAUSDT','AVAXUSDT','NEARUSDT','APTUSDT','SUIUSDT','TONUSDT'], 'Meme':['DOGEUSDT','SHIBUSDT','PEPEUSDT','WIFUSDT','BONKUSDT','FLOKIUSDT'] },
+    forex:{ 'Vàng & bạc':['XAU/USD','XAG/USD','XPT/USD'], 'Forex chính':['EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD','USD/CHF'], 'Dầu & năng lượng':['WTI/USD','BRENT/USD','NATGAS/USD'] },
+    stock:{ 'Tech US':['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA','AMD'], 'Crypto-related':['COIN','MSTR','MARA','RIOT','HOOD'], 'Chỉ số ETF':['SPY','QQQ','DIA','IWM'] }
+  };
+}
 function load(){
   try{
     tdKey=localStorage.getItem('ug_tdkey')||'';
-    const s=JSON.parse(localStorage.getItem('ug_syms')||'null');
-    for(const m in MARKETS)symbols[m]=(s&&s[m])?s[m]:[...MARKETS[m].def];
-    const cap=localStorage.getItem('ug_cap');if(cap)$('capital').value=cap;
+    watchlists=JSON.parse(localStorage.getItem('ug_wl')||'null')||defWatchlists();
+    activeWl=JSON.parse(localStorage.getItem('ug_actwl')||'null')||{};
+    for(const m in LIBRARY){ if(!watchlists[m])watchlists[m]={}; if(!activeWl[m]||!watchlists[m][activeWl[m]])activeWl[m]=Object.keys(watchlists[m])[0]||null; }
     const risk=localStorage.getItem('ug_risk');if(risk)$('riskPct').value=risk;
-  }catch(e){for(const m in MARKETS)symbols[m]=[...MARKETS[m].def];}
-  for(const m in MARKETS)results[m]={};
+    const lev=localStorage.getItem('ug_lev');if(lev)$('defLev').value=lev;
+    const p=JSON.parse(localStorage.getItem('ug_paper')||'null');if(p)paper=p;
+  }catch(e){ watchlists=defWatchlists(); for(const m in LIBRARY)activeWl[m]=Object.keys(watchlists[m])[0]; }
+  for(const m in LIBRARY)results[m]={};
   if(tdKey)$('tdKey').value=tdKey;
 }
-function persist(){try{localStorage.setItem('ug_syms',JSON.stringify(symbols));localStorage.setItem('ug_cap',$('capital').value);localStorage.setItem('ug_risk',$('riskPct').value);}catch(e){}}
+function persist(){try{localStorage.setItem('ug_wl',JSON.stringify(watchlists));localStorage.setItem('ug_actwl',JSON.stringify(activeWl));localStorage.setItem('ug_risk',$('riskPct').value);localStorage.setItem('ug_lev',$('defLev').value);}catch(e){}}
+function persistPaper(){try{localStorage.setItem('ug_paper',JSON.stringify(paper));}catch(e){}}
+function curSyms(){ const wl=activeWl[cur]; return (wl&&watchlists[cur][wl])?watchlists[cur][wl]:[]; }
 
+/* ===== CHỈ BÁO ===== */
 function ema(v,p){const k=2/(p+1),o=new Array(v.length).fill(null);let s=0;for(let i=0;i<v.length;i++){if(i<p-1){s+=v[i];continue;}if(i===p-1){s+=v[i];o[i]=s/p;continue;}o[i]=v[i]*k+o[i-1]*(1-k);}return o;}
 function macdHist(c){const e12=ema(c,12),e26=ema(c,26);const line=c.map((_,i)=>(e12[i]!==null&&e26[i]!==null)?e12[i]-e26[i]:null);const sig=ema(line.map(x=>x===null?0:x),9);return c.map((_,i)=>(line[i]!==null&&sig[i]!==null)?line[i]-sig[i]:null);}
 function pivots(a,k,t){const o=[];for(let i=k;i<a.length-k;i++){let ok=true;for(let j=1;j<=k;j++){if(t==='high'&&!(a[i]>=a[i-j]&&a[i]>=a[i+j]))ok=false;if(t==='low'&&!(a[i]<=a[i-j]&&a[i]<=a[i+j]))ok=false;if(!ok)break;}if(ok)o.push(i);}return o;}
@@ -171,25 +291,26 @@ function valueZone(cd,e34,e89){const n=cd.length;if(n<10)return false;const last
 function divergence(c,h){const win=70,st=Math.max(0,c.length-win),seg=c.slice(st),hs=h.slice(st);const ph=pivots(seg,3,'high').filter(i=>hs[i]!==null&&hs[i]>0);const pl=pivots(seg,3,'low').filter(i=>hs[i]!==null&&hs[i]<0);let phanKy=false,hoiTu=false;if(ph.length>=2){const[a,b]=ph.slice(-2);if(seg[b]>seg[a]&&hs[b]<hs[a])phanKy=true;}if(pl.length>=2){const[a,b]=pl.slice(-2);if(seg[b]<seg[a]&&hs[b]>hs[a])hoiTu=true;}return{phanKy,hoiTu};}
 function fiboPlan(cd){const n=cd.length,look=Math.min(140,n);const seg=cd.slice(n-look);const lows=seg.map(c=>c.l),highs=seg.map(c=>c.h);let iS=0;for(let i=0;i<seg.length;i++)if(lows[i]<lows[iS])iS=i;let iT=iS;for(let i=iS;i<seg.length;i++)if(highs[i]>highs[iT])iT=i;if(iT-iS<5)return null;let iC=iT;for(let i=iT;i<seg.length;i++)if(lows[i]<lows[iC])iC=i;const start=lows[iS],top=highs[iT],c2=lows[iC],range=top-start;if(range<=0)return null;const retr=(top-c2)/range;const retLevels=[0.236,0.382,0.5,0.618,0.764].map(r=>({r,price:top-r*range}));const extLevels=[1,1.618,2.618].map(r=>({r,price:c2+r*range}));return{start,top,c2,retr,retLevels,extLevels};}
 
+/* ===== DỮ LIỆU ===== */
 async function klinesBinance(sym,interval,limit){const r=await fetch(`${BINANCE}?symbol=${sym}&interval=${interval}&limit=${limit}`);if(!r.ok)throw new Error('HTTP '+r.status);return (await r.json()).map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));}
 async function klinesTwelve(sym,interval,size){const url=`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&outputsize=${size}&order=ASC&apikey=${tdKey}`;const r=await fetch(url);const j=await r.json();if(j.status==='error'||j.code>=400)throw new Error(j.message||'Twelve Data error');if(!j.values)throw new Error('Không có dữ liệu');return j.values.map(v=>({t:+new Date(v.datetime),o:+v.open,h:+v.high,l:+v.low,c:+v.close,v:+(v.volume||0)}));}
-async function getKlines(mkt,sym,interval,size){return MARKETS[mkt].source==='binance'?klinesBinance(sym,interval,size):klinesTwelve(sym,interval,size);}
+async function getKlines(mkt,sym,interval,size){return LIBRARY[mkt].source==='binance'?klinesBinance(sym,interval,size):klinesTwelve(sym,interval,size);}
 
 async function analyze(mkt,sym){
   let h4,h1;
-  if(MARKETS[mkt].source==='binance'){[h4,h1]=await Promise.all([getKlines(mkt,sym,'4h',220),getKlines(mkt,sym,'1h',220)]);}
+  if(LIBRARY[mkt].source==='binance'){[h4,h1]=await Promise.all([getKlines(mkt,sym,'4h',220),getKlines(mkt,sym,'1h',220)]);}
   else{h4=await getKlines(mkt,sym,'4h',200);await sleep(300);h1=await getKlines(mkt,sym,'1h',200);}
   const c4=h4.map(x=>x.c),c1=h1.map(x=>x.c);
   const e34_4=ema(c4,34),e89_4=ema(c4,89),e34_1=ema(c1,34),e89_1=ema(c1,89);
   const f4=frameStatus(c4,e34_4,e89_4),f1=frameStatus(c1,e34_1,e89_1);
   const div=divergence(c4,macdHist(c4));
   const vgt=(f4.state==='UP')&&valueZone(h1,e34_1,e89_1);
-  let chip,cls;
-  if(f4.state==='UP'&&f1.state==='UP'){if(div.phanKy){chip='PHÂN KỲ — THẬN TRỌNG';cls='wait';}else if(vgt){chip='VÙNG GIÁ TRỊ — CANH MUA';cls='vgt';}else{chip='CANH MUA';cls='buy';}}
-  else if(f4.state==='DOWN'&&f1.state==='DOWN'){chip='GIẢM — ĐỨNG NGOÀI';cls='out';}
-  else if(f4.sideway||f1.sideway){chip='SIDEWAY — ĐỨNG NGOÀI';cls='sw';}
-  else if(f4.state==='UP'&&f1.state!=='UP'){chip='CHỜ H1 ĐÓNG TRÊN EMA';cls='wait';}
-  else{chip='MÂU THUẪN — ĐỨNG NGOÀI';cls='wait';}
+  let chip,cls,bias;
+  if(f4.state==='UP'&&f1.state==='UP'){bias='long';if(div.phanKy){chip='PHÂN KỲ — THẬN TRỌNG';cls='wait';}else if(vgt){chip='VÙNG GIÁ TRỊ — CANH MUA';cls='vgt';}else{chip='CANH MUA (LONG)';cls='buy';}}
+  else if(f4.state==='DOWN'&&f1.state==='DOWN'){bias='short';chip='GIẢM — CANH SHORT';cls='out';}
+  else if(f4.sideway||f1.sideway){bias='none';chip='SIDEWAY — ĐỨNG NGOÀI';cls='sw';}
+  else if(f4.state==='UP'&&f1.state!=='UP'){bias='long';chip='CHỜ H1 ĐÓNG TRÊN EMA';cls='wait';}
+  else{bias='none';chip='MÂU THUẪN — ĐỨNG NGOÀI';cls='wait';}
   const fib=fiboPlan(h4),price=c4[c4.length-1];
   let plan=null;
   if(cls==='buy'||cls==='vgt'){
@@ -198,20 +319,25 @@ async function analyze(mkt,sym){
     let tp1=null,tp2=null;
     if(fib){const above=fib.extLevels.filter(l=>l.price>price*1.005);if(above.length){tp1=above[0].price;tp2=above[1]?above[1].price:above[0].price*1.05;}}
     if(!tp1){tp1=price+(price-sl);tp2=price+2*(price-sl);}
-    const ru=capRisk(),dist=price-sl,qty=dist>0?ru/dist:0;
-    plan={entry:price,sl,tp1,tp2,qty,vol:qty*price,slPct:dist>0?dist/price*100:0,rr1:(tp1-price)/dist,rr2:(tp2-price)/dist};
+    plan={side:'long',entry:price,sl,tp1,tp2,slPct:(price-sl)/price*100};
   }
   const prev=c4[c4.length-7]||price;
-  return {sym,mkt,price,chg:(price-prev)/prev*100,f4,f1,div,vgt,chip,cls,plan,fib,h4,e34_4,e89_4,err:null};
+  return {sym,mkt,price,chg:(price-prev)/prev*100,f4,f1,div,vgt,chip,cls,bias,plan,fib,h4,e34_4,e89_4,err:null};
 }
 
-function capRisk(){return (+($('capital').value||0))*(+($('riskPct').value||2))/100;}
+/* ===== QUÉT ===== */
+function equity(){ let v=0; paper.positions.forEach(p=>{v+=p.margin+unrealized(p);}); return paper.balance+v; }
+function capRisk(){ return equity()*(+($('riskPct').value||2))/100; }
+function unrealized(p){ const dir=p.side==='long'?1:-1; return dir*(p.lastPrice-p.entry)*p.qtyLeft; } // chỉ phần còn mở
+
 async function scanCurrent(){
-  const mkt=cur;
-  if(MARKETS[mkt].source==='twelve'&&!tdKey){toast('Cần API key Twelve Data trước');$('keybar').classList.add('show');return;}
+  let mkt=cur; if(mkt==='paper')mkt='crypto';
+  if(LIBRARY[mkt].source==='twelve'&&!tdKey){toast('Cần API key Twelve Data trước');$('keybar').classList.add('show');return;}
   if(scanning)return;
+  const wl=activeWl[mkt]; const list=(wl&&watchlists[mkt][wl])?watchlists[mkt][wl]:[];
+  if(!list.length){toast('Danh mục trống — thêm mã trước');return;}
   scanning=true;$('btnScan').textContent='...';$('scanState').textContent='⏳ đang quét...';
-  const list=symbols[mkt],errs=[],twelve=MARKETS[mkt].source==='twelve';
+  const errs=[],twelve=LIBRARY[mkt].source==='twelve';
   for(let i=0;i<list.length;i++){
     const sym=list[i];
     $('scanState').textContent=`⏳ ${i+1}/${list.length} · ${sym}`;
@@ -220,34 +346,77 @@ async function scanCurrent(){
       const key=mkt+':'+sym;
       if((r.cls==='buy'||r.cls==='vgt')&&prevSignal[key]&&prevSignal[key]!==r.cls){toast(`${sym}: ${r.chip}`);beep();if('Notification'in window&&Notification.permission==='granted')new Notification('Underground Scanner',{body:`${sym} → ${r.chip}`});}
       prevSignal[key]=r.cls;results[mkt][sym]=r;
+      managePositions(mkt,sym,r.price);
     }catch(e){results[mkt][sym]={sym,mkt,err:e.message,cls:'err',chip:'LỖI'};errs.push(sym);}
-    if(mkt===cur)render();
+    if(cur===mkt||cur==='paper')render();
     if(twelve&&i<list.length-1)await sleep(8000);
   }
-  $('lastScan').textContent='Quét '+MARKETS[mkt].label+' lúc '+new Date().toLocaleTimeString('vi-VN');
+  $('lastScan').textContent='Quét '+LIBRARY[mkt].label+' lúc '+new Date().toLocaleTimeString('vi-VN');
   $('scanState').textContent=errs.length?('⚠ lỗi: '+errs.join(', ')):'✓ xong';
-  $('btnScan').textContent='Quét';scanning=false;updateCounts();
+  $('btnScan').textContent='Quét';scanning=false;updateCounts();updateMini();
 }
-function recalcAll(){$('riskUsd').textContent=capRisk().toFixed(2);for(const m in results)for(const s in results[m]){const r=results[m][s];if(r.plan){const ru=capRisk(),d=r.plan.entry-r.plan.sl;r.plan.qty=d>0?ru/d:0;r.plan.vol=r.plan.qty*r.plan.entry;}}persist();render();}
+function recalcAll(){updateMini();persist();render();}
+function updateMini(){ $('equityMini').textContent=money(equity())+' $'; $('riskUsd').textContent=money(capRisk())+' $'; }
 
-function switchTab(m){cur=m;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mkt===m));$('keybar').classList.toggle('show',MARKETS[m].source==='twelve'&&!tdKey);$('addSym').placeholder=m==='crypto'?'VD: SOLUSDT':m==='forex'?'VD: XAU/USD':'VD: AAPL';render();}
+/* ===== WATCHLIST UI ===== */
+function fillWlSelect(){
+  const sel=$('wlSelect'); if(cur==='paper')return;
+  const names=Object.keys(watchlists[cur]);
+  sel.innerHTML=names.map(n=>`<option ${n===activeWl[cur]?'selected':''}>${n} (${watchlists[cur][n].length})</option>`).join('')||'<option>—</option>';
+}
+function onWlChange(){ const name=$('wlSelect').value.replace(/ \(\d+\)$/,''); activeWl[cur]=name; persist(); render(); }
+function newWatchlist(){ const n=prompt('Tên danh mục mới:'); if(!n)return; if(watchlists[cur][n]){toast('Đã có danh mục này');return;} watchlists[cur][n]=[]; activeWl[cur]=n; persist(); fillWlSelect(); openLibrary(); }
+
+/* ===== THƯ VIỆN ===== */
+function openLibrary(){ if(cur==='paper'){toast('Chọn một tab thị trường trước');return;} $('libMktName').textContent=LIBRARY[cur].label; $('libWlName').textContent=activeWl[cur]||'(chưa có danh mục)'; if(!activeWl[cur]){newWatchlist();return;} $('libSearch').value=''; renderLib(); $('libModal').classList.add('show'); }
+function closeLib(){ $('libModal').classList.remove('show'); fillWlSelect(); render(); }
+function fullSym(mkt,base){ return LIBRARY[mkt].source==='binance' ? base+LIBRARY[mkt].suffix : base; }
+function renderLib(){
+  const q=$('libSearch').value.trim().toUpperCase();
+  const wl=watchlists[cur][activeWl[cur]]||[];
+  const lib=LIBRARY[cur].list;
+  const inWl=lib.filter(b=>wl.includes(fullSym(cur,b)));
+  const rest=lib.filter(b=>!wl.includes(fullSym(cur,b)));
+  // mã tùy chỉnh đã thêm nhưng không có trong thư viện
+  const custom=wl.filter(s=>!lib.map(b=>fullSym(cur,b)).includes(s));
+  const filt=arr=>arr.filter(b=>!q||fullSym(cur,b).includes(q)||b.includes(q));
+  let html='';
+  if(custom.length){ html+='<div class="libgroup">Mã tự thêm</div>'+custom.filter(s=>!q||s.includes(q)).map(s=>`<div class="libitem sel" onclick="toggleLib('${s}',true)">${s} ✕</div>`).join(''); }
+  if(inWl.length){ html+='<div class="libgroup">Đang trong danh mục</div>'+filt(inWl).map(b=>`<div class="libitem sel" onclick="toggleLib('${fullSym(cur,b)}',true)">${b} ✓</div>`).join(''); }
+  html+='<div class="libgroup">Thư viện ('+LIBRARY[cur].label+')</div>'+filt(rest).map(b=>`<div class="libitem" onclick="toggleLib('${fullSym(cur,b)}',false)">${b}</div>`).join('');
+  $('libGrid').innerHTML=html||'<div class="empty" style="grid-column:1/-1">Không có mã khớp. Nhấn Enter để thêm mã mới.</div>';
+}
+function toggleLib(sym,inWl){ const wl=watchlists[cur][activeWl[cur]]; if(inWl){const i=wl.indexOf(sym);if(i>=0)wl.splice(i,1);}else{if(!wl.includes(sym))wl.push(sym);} persist(); renderLib(); }
+function addCustomFromSearch(){ let s=$('libSearch').value.trim().toUpperCase(); if(!s)return; if(cur==='crypto'&&!s.endsWith('USDT')&&!s.endsWith('BTC'))s+='USDT'; const wl=watchlists[cur][activeWl[cur]]; if(!wl.includes(s))wl.push(s); $('libSearch').value=''; persist(); renderLib(); toast('Đã thêm '+s); }
+
+/* ===== TAB & RENDER ===== */
+function switchTab(m){
+  cur=m; document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===m));
+  const isPaper=(m==='paper');
+  $('keybar').classList.toggle('show',!isPaper&&LIBRARY[m]&&LIBRARY[m].source==='twelve'&&!tdKey);
+  $('mktToolbar').style.display=isPaper?'none':'flex';
+  $('riskPanel').style.display=isPaper?'none':'grid';
+  if(!isPaper)fillWlSelect();
+  render();
+}
 function lightCls(f){if(!f||f.state==='NA')return'';if(f.sideway)return'on-sw';return f.state==='UP'?'on-up':f.state==='DOWN'?'on-down':'on-mid';}
-function updateCounts(){for(const m in MARKETS){const b=Object.values(results[m]).filter(r=>r.cls==='buy'||r.cls==='vgt').length;$('cnt-'+m).textContent=b?('●'+b):'';}}
+function updateCounts(){for(const m in LIBRARY){const b=Object.values(results[m]).filter(r=>r.cls==='buy'||r.cls==='vgt').length;$('cnt-'+m).textContent=b?('●'+b):'';}$('cnt-paper').textContent=paper.positions.length?('●'+paper.positions.length):'';}
+
 function render(){
-  const mkt=cur,list=$('list'),res=results[mkt],syms=symbols[mkt];
-  if(!syms.length){list.innerHTML='<div class="empty">Chưa có mã nào. Thêm mã ở ô trên.</div>';updateCounts();return;}
+  if(cur==='paper'){renderPaper();return;}
+  const mkt=cur,list=$('list'),res=results[mkt],syms=curSyms();
+  if(!syms.length){list.innerHTML='<div class="empty">Danh mục <b>'+(activeWl[mkt]||'—')+'</b> đang trống.<br>Bấm <b>＋ Mã</b> để thêm từ thư viện.</div>';updateCounts();return;}
   const open=new Set([...document.querySelectorAll('.card.open')].map(c=>c.dataset.sym));
   const order={vgt:0,buy:1,wait:2,sw:3,out:4,err:5};
   const sorted=[...syms].sort((a,b)=>(order[res[a]&&res[a].cls]??6)-(order[res[b]&&res[b].cls]??6));
   list.innerHTML=sorted.map(sym=>{
     const r=res[sym];
-    if(!r)return `<div class="card" data-sym="${sym}"><div class="crow"><div class="lights"><span class="lbl">H4</span><div class="light"></div><div class="light"></div><span class="lbl">H1</span></div><div class="cinfo"><div class="sym">${sym}</div><div class="price">chưa quét</div></div><div class="status"><span class="chip pending">CHỜ</span><div class="tags"><span class="delx" onclick="removeSym('${sym}')">xóa</span></div></div></div></div>`;
-    if(r.err)return `<div class="card" data-sym="${sym}"><div class="crow"><div class="lights"><span class="lbl">H4</span><div class="light"></div><div class="light"></div><span class="lbl">H1</span></div><div class="cinfo"><div class="sym">${sym}</div><div class="price" style="color:var(--down)">${r.err}</div></div><div class="status"><span class="chip err">LỖI</span><div class="tags"><span class="delx" onclick="removeSym('${sym}')">xóa</span></div></div></div></div>`;
+    if(!r)return `<div class="card" data-sym="${sym}"><div class="crow"><div class="lights"><span class="lbl">H4</span><div class="light"></div><div class="light"></div><span class="lbl">H1</span></div><div class="cinfo"><div class="sym">${sym}</div><div class="price">chưa quét</div></div><div class="status"><span class="chip pending">CHỜ</span></div></div></div>`;
+    if(r.err)return `<div class="card" data-sym="${sym}"><div class="crow"><div class="lights"><span class="lbl">H4</span><div class="light"></div><div class="light"></div><span class="lbl">H1</span></div><div class="cinfo"><div class="sym">${sym}</div><div class="price" style="color:var(--down)">${r.err}</div></div><div class="status"><span class="chip err">LỖI</span></div></div></div>`;
     const tags=[];
-    if(r.div.phanKy)tags.push('<span class="tag pk">PHÂN KỲ H4</span>');
-    if(r.div.hoiTu)tags.push('<span class="tag ht">HỘI TỤ H4</span>');
+    if(r.div.phanKy)tags.push('<span class="tag pk">PHÂN KỲ</span>');
+    if(r.div.hoiTu)tags.push('<span class="tag ht">HỘI TỤ</span>');
     if(r.vgt)tags.push('<span class="tag vgt">VÙNG GIÁ TRỊ</span>');
-    tags.push(`<span class="delx" onclick="event.stopPropagation();removeSym('${sym}')">xóa</span>`);
     return `<div class="card signal-${r.cls} ${open.has(sym)?'open':''}" data-sym="${sym}"><div class="crow" onclick="toggleCard('${sym}')"><div class="lights"><span class="lbl">H4</span><div class="light ${lightCls(r.f4)}"></div><div class="light ${lightCls(r.f1)}"></div><span class="lbl">H1</span></div><div class="cinfo"><div class="sym">${sym}</div><div class="price">${fmt(r.price)} <span class="chg ${r.chg>=0?'up':'down'}">${r.chg>=0?'+':''}${r.chg.toFixed(2)}%</span></div></div><div class="status"><span class="chip ${r.cls}">${r.chip}</span><div class="tags">${tags.join('')}</div></div></div><div class="detail">${detailHTML(r)}</div></div>`;
   }).join('');
   sorted.forEach(s=>{if(open.has(s)&&res[s]&&!res[s].err)drawChart(s);});
@@ -255,16 +424,18 @@ function render(){
 }
 function detailHTML(r){
   let planHtml='';
-  if(r.plan){const p=r.plan;planHtml=`<div class="plan"><div class="pbox entry"><div class="k">Entry</div><div class="v">${fmt(p.entry)}</div></div><div class="pbox sl"><div class="k">Stoploss</div><div class="v">${fmt(p.sl)} <span style="color:var(--mut);font-size:11px">(−${p.slPct.toFixed(2)}%)</span></div></div><div class="pbox tp"><div class="k">TP1 · chốt 50%, dời SL về entry</div><div class="v">${fmt(p.tp1)} <span style="color:var(--mut);font-size:11px">RR ${p.rr1.toFixed(1)}</span></div></div><div class="pbox tp"><div class="k">TP2 · phần còn lại</div><div class="v">${fmt(p.tp2)} <span style="color:var(--mut);font-size:11px">RR ${p.rr2.toFixed(1)}</span></div></div><div class="pbox"><div class="k">Volume (${$('riskPct').value}%)</div><div class="v">${p.vol.toFixed(2)}</div></div><div class="pbox"><div class="k">Số lượng</div><div class="v">${p.qty<1?p.qty.toFixed(6):p.qty.toFixed(3)}</div></div></div>`;}
+  if(r.plan){const p=r.plan;planHtml=`<div class="plan"><div class="pbox entry"><div class="k">Entry</div><div class="v">${fmt(p.entry)}</div></div><div class="pbox sl"><div class="k">Stoploss</div><div class="v">${fmt(p.sl)} <span style="color:var(--mut);font-size:11px">(−${p.slPct.toFixed(2)}%)</span></div></div><div class="pbox tp"><div class="k">TP1 · chốt 50%</div><div class="v">${fmt(p.tp1)}</div></div><div class="pbox tp"><div class="k">TP2 · phần còn lại</div><div class="v">${fmt(p.tp2)}</div></div></div>`;}
   const fb=r.fib;
   const dow=fb?`Dow (H4): đáy C1 <b>${fmt(fb.start)}</b> → đỉnh C1 <b>${fmt(fb.top)}</b> → C2 hồi <b>${fmt(fb.c2)}</b> (≈Fibo <b>${(fb.retr*100).toFixed(1)}%</b> ${fb.retr<=0.5?'<span class="ok">— thuận xu thế</span>':fb.retr<=0.786?'<span class="wn">— hồi sâu, chờ xác nhận</span>':'<span class="no">— C2 nguy cơ thành C1 giảm</span>'})`:'Chưa đủ cấu trúc Dow để vẽ Fibo.';
-  return `<canvas class="chart" id="cv-${cssId(r.sym)}"></canvas>${planHtml}<div class="rules">${dow}<br>H4: giá ${r.f4.state==='UP'?'<span class="ok">trên</span>':r.f4.state==='DOWN'?'<span class="no">dưới</span>':'<span class="wn">kẹt giữa</span>'} EMA · H1: giá ${r.f1.state==='UP'?'<span class="ok">trên</span>':r.f1.state==='DOWN'?'<span class="no">dưới</span>':'<span class="wn">kẹt giữa</span>'} EMA${r.div.phanKy?'<br><span class="no">⚠ Phân kỳ MACD H4 — không mở thêm vị thế mua.</span>':''}${r.div.hoiTu?'<br><span class="ok">Hội tụ MACD H4 — theo dõi gom hàng (cần đáy sau cao hơn + phá cản).</span>':''}${r.plan?'<br><b>Kỷ luật:</b> nghĩ kịch bản thua trước khi vào · sai kịch bản thì cắt dù chưa chạm SL · 3 SL liên tiếp = nghỉ.':''}</div>`;
+  const hasPos=paper.positions.some(p=>p.mkt===r.mkt&&p.sym===r.sym);
+  const btns = hasPos
+    ? `<div class="tradebtns"><button class="btn" disabled style="flex:1;opacity:.5">Đang có lệnh — xem tab Tài khoản</button></div>`
+    : `<div class="tradebtns"><button class="btn long" onclick="event.stopPropagation();openTrade('${r.mkt}','${r.sym}','long')">▲ LONG</button><button class="btn short" onclick="event.stopPropagation();openTrade('${r.mkt}','${r.sym}','short')">▼ SHORT</button></div>`;
+  return `<canvas class="chart" id="cv-${cssId(r.sym)}"></canvas>${planHtml}${btns}<div class="rules">${dow}<br>H4: giá ${r.f4.state==='UP'?'<span class="ok">trên</span>':r.f4.state==='DOWN'?'<span class="no">dưới</span>':'<span class="wn">kẹt giữa</span>'} EMA · H1: giá ${r.f1.state==='UP'?'<span class="ok">trên</span>':r.f1.state==='DOWN'?'<span class="no">dưới</span>':'<span class="wn">kẹt giữa</span>'} EMA${r.div.phanKy?'<br><span class="no">⚠ Phân kỳ MACD H4 — không mở thêm vị thế mua.</span>':''}${r.div.hoiTu?'<br><span class="ok">Hội tụ MACD H4 — theo dõi gom hàng.</span>':''}<br><b>Kỷ luật:</b> chỉ Long khi xu thế tăng, Short khi xu thế giảm · 3 SL liên tiếp = nghỉ · TP1 chốt 50% + dời SL về entry.</div>`;
 }
 function toggleCard(s){const c=document.querySelector(`.card[data-sym="${s}"]`);c.classList.toggle('open');if(c.classList.contains('open')&&results[cur][s]&&!results[cur][s].err)drawChart(s);}
-function removeSym(s){symbols[cur]=symbols[cur].filter(x=>x!==s);delete results[cur][s];persist();render();}
-function addSymbol(){let s=$('addSym').value.trim().toUpperCase();if(!s)return;if(cur==='crypto'&&!s.endsWith('USDT')&&!s.endsWith('BTC'))s+='USDT';if(!symbols[cur].includes(s))symbols[cur].push(s);$('addSym').value='';persist();render();}
-function saveKey(){tdKey=$('tdKey').value.trim();try{localStorage.setItem('ug_tdkey',tdKey);}catch(e){}if(tdKey){$('keybar').classList.remove('show');toast('Đã lưu API key');}}
 
+/* ===== CHART ===== */
 function drawChart(sym){
   const r=results[cur][sym];if(!r||r.err)return;
   const cv=$('cv-'+cssId(sym));if(!cv)return;
@@ -285,10 +456,155 @@ function drawChart(sym){
   const c=cd[cd.length-1].c;ctx.fillStyle='#D7E2EC';ctx.fillRect(W-padR,y(c)-8,padR,16);ctx.fillStyle='#0A0F14';ctx.font='bold 10px '+MONO;ctx.fillText(fmt(c),W-padR+3,y(c)+3.5);
   ctx.font='9px '+MONO;ctx.fillStyle='#E8B33C';ctx.fillText('EMA34',padL+4,12);ctx.fillStyle='#4D9FFF';ctx.fillText('EMA89',padL+44,12);ctx.fillStyle='#6B7C8C';ctx.fillText('H4·'+N,padL+84,12);
 }
-function toggleAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('btnAuto').textContent='Tự quét: TẮT';$('btnAuto').classList.remove('toggleon');}else{const sec=Math.max(30,+($('interval').value||120));autoTimer=setInterval(()=>scanCurrent(),sec*1000);$('btnAuto').textContent='Tự quét: '+sec+'s';$('btnAuto').classList.add('toggleon');scanCurrent();}}
+
+/* ===== GIAO DỊCH ẢO (MARGIN) ===== */
+function setSide(s){tradeSide=s;$('segLong').classList.toggle('act',s==='long');$('segShort').classList.toggle('act',s==='short');mCalc();}
+function openTrade(mkt,sym,side){
+  const r=results[mkt]&&results[mkt][sym]; if(!r||r.err){toast('Cần quét mã này trước');return;}
+  modalCtx={mkt,sym}; tradeSide=side;
+  setSide(side);
+  const price=r.price; const p=r.plan;
+  let sl,tp1,tp2;
+  if(side==='long'){ sl=p?p.sl:price*0.97; tp1=p?p.tp1:price*1.03; tp2=p?p.tp2:price*1.06; }
+  else { sl=price*1.03; tp1=price*0.97; tp2=price*0.94; }
+  const lev=Math.max(1,Math.min(20,+($('defLev').value||1)));
+  $('mSym').textContent=sym; $('mEntry').value=round(price); $('mSL').value=round(sl); $('mTP1').value=round(tp1); $('mTP2').value=round(tp2);
+  $('mLev').value=lev; $('mLevVal').textContent=lev+'x';
+  // ký quỹ mặc định = risk 2% / khoảng cách SL, quy về margin theo đòn bẩy
+  const dist=Math.abs(price-sl); const riskAmt=capRisk(); const qty=dist>0?riskAmt/dist:0; const notional=qty*price; const margin=notional/lev;
+  $('mMargin').value=Math.min(Math.max(margin,1),paper.balance).toFixed(2);
+  $('tradeModal').classList.add('show'); mCalc();
+}
+function round(n){const a=Math.abs(n);const d=a>=1000?2:a>=1?4:a>=0.01?6:8;return Number(n.toFixed(d));}
+function closeModal(){$('tradeModal').classList.remove('show');modalCtx=null;}
+function mCalc(){
+  const e=+$('mEntry').value,sl=+$('mSL').value,tp2=+$('mTP2').value,margin=+$('mMargin').value,lev=+$('mLev').value;
+  $('mLevVal').textContent=lev+'x';
+  if(!e||!margin){$('mCalcLine').innerHTML='';return;}
+  const notional=margin*lev, qty=notional/e;
+  const dir=tradeSide==='long'?1:-1;
+  const riskAmt=qty*Math.abs(e-sl), reward=qty*Math.abs(tp2-e);
+  const rr=Math.abs(e-sl)>0?Math.abs(tp2-e)/Math.abs(e-sl):0;
+  const eq=equity(); const riskPctBal=eq>0?riskAmt/eq*100:0;
+  // giá thanh lý xấp xỉ: mất ~ margin (trừ phí). long: e*(1-1/lev), short: e*(1+1/lev)
+  const liq=tradeSide==='long'?e*(1-1/lev*0.97):e*(1+1/lev*0.97);
+  let warn='';
+  const slOk=tradeSide==='long'?(sl<e):(sl>e);
+  if(!slOk) warn='<br><span style="color:var(--down)">⚠ SL đặt sai phía cho lệnh '+tradeSide.toUpperCase()+'.</span>';
+  else if(riskPctBal>2.2) warn=`<br><span style="color:var(--warn)">⚠ Rủi ro ${riskPctBal.toFixed(1)}% equity — vượt quy tắc 2%. Hạ ký quỹ hoặc đòn bẩy.</span>`;
+  const liqWarn=(tradeSide==='long'&&sl<=liq)||(tradeSide==='short'&&sl>=liq) ? '<br><span style="color:var(--down)">⚠ Giá thanh lý ('+fmt(liq)+') chạm trước cả SL — đòn bẩy quá cao!</span>':'';
+  $('mCalcLine').innerHTML=`Khối lượng <b>${qty<1?qty.toFixed(6):qty.toFixed(4)}</b> · Giá trị lệnh <b>${money(notional)}</b> (${lev}x)<br>Rủi ro tới SL: <b style="color:var(--down)">−${money(riskAmt)}</b> (${riskPctBal.toFixed(1)}% eq) · Lãi tới TP2: <b style="color:var(--up)">+${money(reward)}</b> · RR <b>1:${rr.toFixed(1)}</b><br>Giá thanh lý ước tính: <b style="color:var(--down)">${fmt(liq)}</b>${warn}${liqWarn}`;
+}
+function confirmTrade(){
+  if(!modalCtx)return;
+  const e=+$('mEntry').value,sl=+$('mSL').value,tp1=+$('mTP1').value,tp2=+$('mTP2').value,margin=+$('mMargin').value,lev=+$('mLev').value;
+  if(!e||!sl||!tp1||!margin){toast('Điền đủ Entry, SL, TP1, Ký quỹ');return;}
+  const slOk=tradeSide==='long'?(sl<e):(sl>e);
+  if(!slOk){toast('SL đặt sai phía cho lệnh '+tradeSide.toUpperCase());return;}
+  if(margin>paper.balance){toast('Ký quỹ vượt số dư khả dụng ('+money(paper.balance)+')');return;}
+  const notional=margin*lev, qty=notional/e;
+  const liq=tradeSide==='long'?e*(1-1/lev*0.97):e*(1+1/lev*0.97);
+  paper.balance-=margin;
+  paper.positions.push({id:Date.now(),mkt:modalCtx.mkt,sym:modalCtx.sym,side:tradeSide,entry:e,sl,slOrig:sl,tp1,tp2,lev,margin,marginInit:margin,qtyTotal:qty,qtyLeft:qty,liq,realized:0,tp1Hit:false,opened:Date.now(),lastPrice:e});
+  persistPaper();closeModal();toast(`Đã mở ${tradeSide.toUpperCase()} ${modalCtx.sym} ${lev}x`);switchTab('paper');
+}
+function managePositions(mkt,sym,price){
+  let changed=false;
+  for(let qi=paper.positions.length-1;qi>=0;qi--){
+    const pos=paper.positions[qi];
+    if(pos.mkt!==mkt||pos.sym!==sym)continue;
+    pos.lastPrice=price;
+    const long=pos.side==='long', dir=long?1:-1;
+    // thanh lý
+    if((long&&price<=pos.liq)||(!long&&price>=pos.liq)){ closePosition(pos,'THANH LÝ',pos.liq,true); changed=true; continue; }
+    // SL
+    if((long&&price<=pos.sl)||(!long&&price>=pos.sl)){ closePosition(pos,pos.tp1Hit?'BE/TP1':'SL',pos.sl); changed=true; continue; }
+    // TP1: chốt 50% (hoàn nửa ký quỹ + lãi nửa đó vào balance), dời SL về entry
+    if(!pos.tp1Hit&&((long&&price>=pos.tp1)||(!long&&price<=pos.tp1))){
+      const halfQty=pos.qtyTotal*0.5, halfMargin=pos.marginInit*0.5;
+      const halfPnl=dir*(pos.tp1-pos.entry)*halfQty;
+      paper.balance+=halfMargin+halfPnl;
+      pos.qtyLeft-=halfQty; pos.margin-=halfMargin; pos.tp1Hit=true; pos.sl=pos.entry;
+      changed=true; toast(`${sym}: TP1 — chốt 50%, dời SL về entry`);beep();
+    }
+    // TP2: đóng nốt
+    if(pos.tp1Hit&&((long&&price>=pos.tp2)||(!long&&price<=pos.tp2))){ closePosition(pos,'TP2',pos.tp2); changed=true; continue; }
+  }
+  if(changed){persistPaper();updateMini();}
+}
+function closePosition(pos,reason,price,liq){
+  const idx=paper.positions.findIndex(p=>p.id===pos.id); if(idx<0)return;
+  const pnl=pnlOf(pos,price,liq);
+  // hoàn lại ký quỹ còn lại trên vị thế + lãi/lỗ của phần còn mở; phần TP1 (nếu có) đã được tính trong pnl
+  const returnMargin = liq ? 0 : pos.margin; // thanh lý mất sạch ký quỹ còn lại
+  const restPnl = liq ? 0 : (pos.side==='long'?1:-1)*(price-pos.entry)*pos.qtyLeft;
+  paper.balance += returnMargin + restPnl;
+  paper.history.unshift({sym:pos.sym,mkt:pos.mkt,side:pos.side,lev:pos.lev,entry:pos.entry,exit:price,reason,pnl,opened:pos.opened,closed:Date.now()});
+  paper.positions.splice(idx,1);
+  toast(`${pos.sym} đóng (${reason}) · ${pnl>=0?'+':''}${money(pnl)}`);beep();
+  persistPaper();updateMini();
+}
+// PnL tổng của vị thế (gồm phần TP1 đã chốt nếu có)
+function pnlOf(pos,price,liq){
+  const dir=pos.side==='long'?1:-1;
+  if(liq) return -pos.marginInit; // thanh lý: mất toàn bộ ký quỹ ban đầu
+  const partTp1 = pos.tp1Hit ? dir*(pos.tp1-pos.entry)*(pos.qtyTotal*0.5) : 0;
+  const partRest = dir*(price-pos.entry)*pos.qtyLeft;
+  return partTp1+partRest;
+}
+function closeManual(id){
+  const pos=paper.positions.find(p=>p.id===id); if(!pos)return;
+  if(!confirm(`Đóng ${pos.side.toUpperCase()} ${pos.sym} tại giá ${fmt(pos.lastPrice)}?`))return;
+  closePosition(pos,'Đóng tay',pos.lastPrice); renderPaper();
+}
+function resetPaper(){ if(!confirm('Đặt lại tài khoản ảo về 1.000.000$ và xóa hết lệnh?'))return; paper={start:1000000,balance:1000000,positions:[],history:[]}; persistPaper(); updateMini(); renderPaper(); }
+function renderPaper(){
+  const list=$('list');
+  let posMargin=0,upnl=0; paper.positions.forEach(p=>{posMargin+=p.margin;upnl+=unrealized(p);});
+  const eq=paper.balance+posMargin+upnl;
+  const wins=paper.history.filter(h=>h.pnl>0).length, losses=paper.history.filter(h=>h.pnl<0).length, closed=paper.history.length;
+  const winRate=closed?wins/closed*100:0;
+  const totPnl=eq-paper.start, totPct=paper.start?totPnl/paper.start*100:0;
+  let html=`<div class="pacc">
+    <div class="pa"><div class="k">Equity</div><div class="v gold">${money(eq)}</div></div>
+    <div class="pa"><div class="k">Khả dụng</div><div class="v">${money(paper.balance)}</div></div>
+    <div class="pa"><div class="k">Ký quỹ đang dùng</div><div class="v">${money(posMargin)}</div></div>
+    <div class="pa"><div class="k">PnL mở</div><div class="v ${upnl>=0?'up':'down'}">${upnl>=0?'+':''}${money(upnl)}</div></div>
+    <div class="pa"><div class="k">Tổng L/L</div><div class="v ${totPnl>=0?'up':'down'}">${totPnl>=0?'+':''}${money(totPnl)} (${totPct>=0?'+':''}${totPct.toFixed(1)}%)</div></div>
+    <div class="pa"><div class="k">Win rate</div><div class="v ${winRate>=50?'up':''}">${wins}/${losses} · ${winRate.toFixed(0)}%</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn gold" style="flex:1" onclick="scanCurrent()">Cập nhật giá</button><button class="btn" onclick="resetPaper()">Reset</button></div>`;
+  if(!paper.positions.length&&!paper.history.length){ html+='<div class="empty">Chưa có lệnh ảo.<br>Mở một mã ở tab thị trường → bấm <b>LONG</b> hoặc <b>SHORT</b>.</div>'; list.innerHTML=html;updateCounts();return; }
+  if(paper.positions.length){
+    html+='<div style="font-size:12px;color:var(--mut);margin:6px 0 8px;font-family:var(--mono)">ĐANG MỞ ('+paper.positions.length+')</div>';
+    html+=paper.positions.map(p=>{
+      const pl=unrealized(p), pct=p.marginInit?pl/p.marginInit*100:0;
+      const lo=Math.min(p.slOrig,p.tp2,p.entry),hi=Math.max(p.slOrig,p.tp2,p.entry),rng=hi-lo;
+      const at=x=>rng>0?Math.max(0,Math.min(100,(x-lo)/rng*100)):50;
+      return `<div class="ptrade open-pos"><div class="ph"><span class="psym">${p.sym}<span class="sidetag ${p.side}">${p.side==='long'?'LONG':'SHORT'} ${p.lev}x</span>${p.tp1Hit?'<span class="ptag tp1">TP1✓</span>':''}</span><span class="ppl" style="color:${pl>=0?'var(--up)':'var(--down)'}">${pl>=0?'+':''}${money(pl)} (${pct>=0?'+':''}${pct.toFixed(1)}%)</span></div>
+      <div class="pmeta">Vào ${fmt(p.entry)} · Giá ${fmt(p.lastPrice)} · SL ${fmt(p.sl)} · TP1 ${fmt(p.tp1)} · TP2 ${fmt(p.tp2)} · Thanh lý ${fmt(p.liq)} · Ký quỹ ${money(p.margin)}</div>
+      <div class="pbar"><i style="left:${at(p.slOrig)}%;width:2px;background:var(--down)"></i><i style="left:${at(p.entry)}%;width:2px;background:var(--gold)"></i><i style="left:${at(p.tp2)}%;width:2px;background:var(--up)"></i><i style="left:${at(p.lastPrice)}%;width:3px;background:#fff"></i></div>
+      <div style="text-align:right;margin-top:8px"><span class="pclose" onclick="closeManual(${p.id})">Đóng tay</span></div></div>`;
+    }).join('');
+  }
+  if(paper.history.length){
+    html+='<div style="font-size:12px;color:var(--mut);margin:14px 0 8px;font-family:var(--mono)">LỊCH SỬ ('+closed+')</div>';
+    html+=paper.history.slice(0,60).map(h=>{
+      const tagCls=h.reason==='THANH LÝ'?'liq':h.pnl>0?'win':h.pnl<0?'loss':'be';
+      const dur=Math.round((h.closed-h.opened)/3600000);
+      return `<div class="ptrade"><div class="ph"><span class="psym">${h.sym}<span class="sidetag ${h.side}">${h.side==='long'?'L':'S'} ${h.lev}x</span><span class="ptag ${tagCls}">${h.reason}</span></span><span class="ppl" style="color:${h.pnl>=0?'var(--up)':'var(--down)'}">${h.pnl>=0?'+':''}${money(h.pnl)}</span></div><div class="pmeta">Vào ${fmt(h.entry)} → ra ${fmt(h.exit)} · giữ ~${dur}h</div></div>`;
+    }).join('');
+  }
+  list.innerHTML=html;updateCounts();
+}
+
+/* ===== AUTO / SOUND ===== */
+function toggleAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('btnAuto').textContent='Auto: TẮT';$('btnAuto').classList.remove('toggleon');}else{const sec=Math.max(30,+($('interval').value||120));autoTimer=setInterval(()=>scanCurrent(),sec*1000);$('btnAuto').textContent='Auto: '+sec+'s';$('btnAuto').classList.add('toggleon');scanCurrent();}}
 function toggleSound(){soundOn=!soundOn;$('btnSound').textContent=soundOn?'🔔':'🔕';$('btnSound').classList.toggle('toggleon',soundOn);if(soundOn){beep();if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();}}
+function saveKey(){tdKey=$('tdKey').value.trim();try{localStorage.setItem('ug_tdkey',tdKey);}catch(e){}if(tdKey){$('keybar').classList.remove('show');toast('Đã lưu API key');}}
 window.addEventListener('resize',()=>{document.querySelectorAll('.card.open').forEach(c=>drawChart(c.dataset.sym));});
-load();switchTab('crypto');recalcAll();
+
+load();switchTab('crypto');updateMini();
 </script>
 </body>
 </html>
