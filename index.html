@@ -233,7 +233,7 @@ const LIBRARY = {
   },
   forex: {
     source:'twelve', label:'Vàng/Forex', suffix:'',
-    list:['XAU/USD','XAG/USD','XPT/USD','EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','NZD/USD','USD/CAD','EUR/JPY','GBP/JPY','EUR/GBP','AUD/JPY','EUR/AUD','GBP/CHF','CAD/JPY','CHF/JPY','EUR/CHF','AUD/NZD','USD/SGD','USD/HKD','WTI/USD','BRENT/USD','NATGAS/USD']
+    list:['XAU/USD','EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','NZD/USD','USD/CAD','EUR/JPY','GBP/JPY','EUR/GBP','AUD/JPY','EUR/AUD','GBP/CHF','CAD/JPY','CHF/JPY','EUR/CHF','AUD/NZD','USD/SGD','USD/HKD','XAG/USD','XPT/USD','WTI/USD','BRENT/USD','NATGAS/USD']
   },
   stock: {
     source:'twelve', label:'CK Mỹ', suffix:'',
@@ -261,7 +261,7 @@ function beep(){if(!soundOn)return;try{const c=beep.c||(beep.c=new(window.AudioC
 function defWatchlists(){
   return {
     crypto:{ 'Top coin':['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT'], 'Layer 1':['ETHUSDT','SOLUSDT','ADAUSDT','AVAXUSDT','NEARUSDT','APTUSDT','SUIUSDT','TONUSDT'], 'Meme':['DOGEUSDT','SHIBUSDT','PEPEUSDT','WIFUSDT','BONKUSDT','FLOKIUSDT'] },
-    forex:{ 'Vàng & bạc':['XAU/USD','XAG/USD','XPT/USD'], 'Forex chính':['EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD','USD/CHF'], 'Dầu & năng lượng':['WTI/USD','BRENT/USD','NATGAS/USD'] },
+    forex:{ 'Vàng & Forex chính':['XAU/USD','EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD','USD/CHF'], 'Vàng':['XAU/USD'], 'Cặp chéo JPY':['EUR/JPY','GBP/JPY','AUD/JPY','CAD/JPY','CHF/JPY'] },
     stock:{ 'Tech US':['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA','AMD'], 'Crypto-related':['COIN','MSTR','MARA','RIOT','HOOD'], 'Chỉ số ETF':['SPY','QQQ','DIA','IWM'] }
   };
 }
@@ -276,6 +276,14 @@ function load(){
     const p=JSON.parse(localStorage.getItem('ug_paper')||'null');if(p)paper=p;
   }catch(e){ watchlists=defWatchlists(); for(const m in LIBRARY)activeWl[m]=Object.keys(watchlists[m])[0]; }
   for(const m in LIBRARY)results[m]={};
+  // dọn một lần các mã commodity chỉ có ở gói trả phí khỏi watchlist forex đã lưu
+  try{
+    if(!localStorage.getItem('ug_clean1')){
+      const paid=['XAG/USD','XPT/USD','XPD/USD','WTI/USD','BRENT/USD','NATGAS/USD'];
+      if(watchlists.forex)for(const n in watchlists.forex)watchlists.forex[n]=watchlists.forex[n].filter(s=>!paid.includes(s));
+      localStorage.setItem('ug_clean1','1'); persist();
+    }
+  }catch(e){}
   if(tdKey)$('tdKey').value=tdKey;
 }
 function persist(){try{localStorage.setItem('ug_wl',JSON.stringify(watchlists));localStorage.setItem('ug_actwl',JSON.stringify(activeWl));localStorage.setItem('ug_risk',$('riskPct').value);localStorage.setItem('ug_lev',$('defLev').value);}catch(e){}}
@@ -293,7 +301,7 @@ function fiboPlan(cd){const n=cd.length,look=Math.min(140,n);const seg=cd.slice(
 
 /* ===== DỮ LIỆU ===== */
 async function klinesBinance(sym,interval,limit){const r=await fetch(`${BINANCE}?symbol=${sym}&interval=${interval}&limit=${limit}`);if(!r.ok)throw new Error('HTTP '+r.status);return (await r.json()).map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));}
-async function klinesTwelve(sym,interval,size){const url=`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&outputsize=${size}&order=ASC&apikey=${tdKey}`;const r=await fetch(url);const j=await r.json();if(j.status==='error'||j.code>=400)throw new Error(j.message||'Twelve Data error');if(!j.values)throw new Error('Không có dữ liệu');return j.values.map(v=>({t:+new Date(v.datetime),o:+v.open,h:+v.high,l:+v.low,c:+v.close,v:+(v.volume||0)}));}
+async function klinesTwelve(sym,interval,size){const url=`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&outputsize=${size}&order=ASC&apikey=${tdKey}`;const r=await fetch(url);const j=await r.json();if(j.status==='error'||j.code>=400){let msg=j.message||'Twelve Data error';if(/Grow or Venture|upgrading/i.test(msg))msg='Mã này cần gói trả phí Twelve Data';else if(/run out of API credits|limit/i.test(msg))msg='Hết lượt gọi API phút này — chờ chút rồi quét lại';throw new Error(msg);}if(!j.values)throw new Error('Không có dữ liệu');return j.values.map(v=>({t:+new Date(v.datetime),o:+v.open,h:+v.high,l:+v.low,c:+v.close,v:+(v.volume||0)}));}
 async function getKlines(mkt,sym,interval,size){return LIBRARY[mkt].source==='binance'?klinesBinance(sym,interval,size):klinesTwelve(sym,interval,size);}
 
 async function analyze(mkt,sym){
