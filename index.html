@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A0F14">
-<title>Underground Scanner — Sàn demo đa thị trường</title>
+<title>Andrew Le Scanner</title>
 <style>
   :root{
     --bg:#0A0F14; --panel:#111922; --panel2:#0E141C; --line:#1E2A36;
@@ -150,8 +150,8 @@
 <body>
 <header>
   <div class="brand">
-    <h1>UNDERGROUND <span class="u">SCANNER</span></h1>
-    <span class="sub">EMA 34/89 · H4+H1 · Sàn demo</span>
+    <h1>ANDREW LE <span class="u">SCANNER</span></h1>
+    <span class="sub">Đứng ngoài cũng là một vị thế</span>
   </div>
   <div class="tabs">
     <button class="tab active" data-tab="crypto" onclick="switchTab('crypto')">Crypto <span class="cnt" id="cnt-crypto"></span></button>
@@ -183,8 +183,8 @@
   <div id="list"></div>
 </main>
 <footer>
-  <b>Sàn demo — không phải tiền thật.</b> Crypto từ Binance (miễn phí). Vàng/Forex/CK Mỹ từ Twelve Data (free 8 gọi/phút, app tự giãn nhịp). CK Mỹ chỉ chạy giờ giao dịch Mỹ.
-  Đòn bẩy 1x–20x có tính thanh lý (liquidation) gần mức mất hết ký quỹ. Long/Short đều được, nhưng hệ thống Underground khuyến nghị chỉ thuận xu thế: Long khi giá trên EMA34&amp;89, Short khi dưới.
+  <b>Tài khoản ảo — không phải tiền thật.</b> Crypto từ Binance (miễn phí). Vàng/Forex/CK Mỹ từ Twelve Data (free 8 gọi/phút, app tự giãn nhịp). CK Mỹ chỉ chạy giờ giao dịch Mỹ.
+  Đòn bẩy 1x–20x có tính thanh lý (liquidation) gần mức mất hết ký quỹ. Long/Short đều được, nhưng nên ưu tiên thuận xu thế: Long khi giá trên EMA34&amp;89, Short khi dưới.
   Mọi danh mục &amp; tài khoản lưu trên thiết bị. Kỷ luật là chén thánh.
 </footer>
 <div class="toast" id="toast"></div>
@@ -233,7 +233,17 @@ const LIBRARY = {
   },
   forex: {
     source:'twelve', label:'Vàng/Forex', suffix:'',
-    list:['XAU/USD','EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','NZD/USD','USD/CAD','EUR/JPY','GBP/JPY','EUR/GBP','AUD/JPY','EUR/AUD','GBP/CHF','CAD/JPY','CHF/JPY','EUR/CHF','AUD/NZD','USD/SGD','USD/HKD','XAG/USD','XPT/USD','WTI/USD','BRENT/USD','NATGAS/USD']
+    list:[
+      'XAU/USD',
+      'EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','NZD/USD','USD/CAD',
+      'EUR/JPY','GBP/JPY','EUR/GBP','EUR/CHF','EUR/AUD','EUR/CAD','EUR/NZD',
+      'GBP/CHF','GBP/AUD','GBP/CAD','GBP/NZD','AUD/JPY','AUD/CHF','AUD/CAD','AUD/NZD',
+      'NZD/JPY','NZD/CHF','NZD/CAD','CAD/JPY','CAD/CHF','CHF/JPY',
+      'USD/SGD','USD/HKD','USD/CNH','USD/MXN','USD/ZAR','USD/TRY','USD/SEK','USD/NOK','USD/DKK','USD/PLN','USD/HUF','USD/CZK','USD/THB','USD/INR','USD/KRW','USD/RUB',
+      'EUR/SEK','EUR/NOK','EUR/PLN','EUR/HUF','EUR/CZK','EUR/TRY','EUR/ZAR','EUR/SGD','EUR/HKD',
+      'GBP/SGD','GBP/ZAR','AUD/SGD','SGD/JPY','ZAR/JPY','TRY/JPY','MXN/JPY',
+      'XAG/USD','XPT/USD','WTI/USD','BRENT/USD','NATGAS/USD'
+    ]
   },
   stock: {
     source:'twelve', label:'CK Mỹ', suffix:'',
@@ -352,7 +362,7 @@ async function scanCurrent(){
     try{
       const r=await analyze(mkt,sym);
       const key=mkt+':'+sym;
-      if((r.cls==='buy'||r.cls==='vgt')&&prevSignal[key]&&prevSignal[key]!==r.cls){toast(`${sym}: ${r.chip}`);beep();if('Notification'in window&&Notification.permission==='granted')new Notification('Underground Scanner',{body:`${sym} → ${r.chip}`});}
+      if((r.cls==='buy'||r.cls==='vgt')&&prevSignal[key]&&prevSignal[key]!==r.cls){toast(`${sym}: ${r.chip}`);beep();if('Notification'in window&&Notification.permission==='granted')new Notification('Andrew Le Scanner',{body:`${sym} → ${r.chip}`});}
       prevSignal[key]=r.cls;results[mkt][sym]=r;
       managePositions(mkt,sym,r.price);
     }catch(e){results[mkt][sym]={sym,mkt,err:e.message,cls:'err',chip:'LỖI'};errs.push(sym);}
