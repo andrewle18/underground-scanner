@@ -125,7 +125,7 @@
   .libitem{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-family:var(--mono);font-size:12px;cursor:pointer;text-align:center;color:var(--txt)}
   .libitem.sel{background:rgba(43,216,150,.16);border-color:var(--up);color:var(--up)}
   .libgroup{grid-column:1/-1;font-size:11px;color:var(--mut);font-family:var(--mono);margin-top:6px;letter-spacing:.05em}
-  /* Ví ảo */
+  /* Tài khoản */
   .pacc{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:10px}
   .pacc .pa{text-align:center}
   .pacc .pa .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
@@ -178,7 +178,7 @@
     <div><label>Rủi ro/lệnh (%)</label><input type="number" id="riskPct" value="2" min="0.1" max="10" step="0.1" oninput="recalcAll()"></div>
     <div><label>Đòn bẩy mặc định</label><input type="number" id="defLev" value="1" min="1" max="20" step="1" oninput="persist()"></div>
     <div><label>Chu kỳ tự quét (giây)</label><input type="number" id="interval" value="120" min="30" step="10"></div>
-    <div class="riskline">Ví ảo: <b id="equityMini">—</b> · Quy tắc 2%: mỗi lệnh chỉ mất tối đa <b id="riskUsd">—</b> tính trên equity. SL xa thì hạ vốn/đòn bẩy, không nới SL.</div>
+    <div class="riskline">Tài khoản: <b id="equityMini">—</b> · Quy tắc 2%: mỗi lệnh chỉ mất tối đa <b id="riskUsd">—</b> tính trên equity. SL xa thì hạ vốn/đòn bẩy, không nới SL.</div>
   </div>
   <div id="list"></div>
 </main>
@@ -200,11 +200,11 @@
   </div>
 </div>
 
-<!-- Modal: đặt lệnh ảo -->
+<!-- Modal: đặt lệnh -->
 <div class="modal" id="tradeModal">
   <div class="sheet">
-    <h3>Lệnh ảo — <span class="symname" id="mSym"></span></h3>
-    <p class="hint">Số liệu điền sẵn theo kế hoạch hệ thống, anh sửa được. Không dùng tiền thật.</p>
+    <h3>Đặt lệnh — <span class="symname" id="mSym"></span></h3>
+    <p class="hint">Số liệu điền sẵn theo kế hoạch hệ thống, anh sửa được.</p>
     <div class="sideseg">
       <button class="lon" id="segLong" onclick="setSide('long')">LONG (mua)</button>
       <button class="sho" id="segShort" onclick="setSide('short')">SHORT (bán)</button>
@@ -498,10 +498,12 @@ function openTrade(mkt,sym,side){
   const lev=Math.max(1,Math.min(20,+($('defLev').value||1)));
   $('mSym').textContent=sym; $('mEntry').value=round(price); $('mSL').value=round(sl); $('mTP1').value=round(tp1); $('mTP2').value=round(tp2);
   $('mLev').value=lev; $('mLevVal').textContent=lev+'x';
-  // ký quỹ mặc định theo quy tắc rủi ro; nếu vượt số dư thì lấy số dư; luôn >= 1 và không vượt số dư
+  // ký quỹ mặc định theo quy tắc rủi ro, nhưng không vượt 10% tài khoản và không vượt số dư khả dụng
   const dist=Math.abs(price-sl); const riskAmt=capRisk(); const qty=dist>0?riskAmt/dist:0; const notional=qty*price; let margin=lev>0?notional/lev:notional;
-  if(!isFinite(margin)||margin<=0) margin=Math.min(paper.balance, equity()*0.05); // fallback 5% equity
-  margin=Math.max(1, Math.min(margin, paper.balance));
+  const cap10=equity()*0.10;
+  if(!isFinite(margin)||margin<=0) margin=cap10;
+  margin=Math.min(margin, cap10);              // không quá 10% tài khoản
+  margin=Math.max(1, Math.min(margin, paper.balance)); // không vượt số dư khả dụng
   $('mMargin').value=margin.toFixed(2);
   $('tradeModal').classList.add('show'); mCalc();
 }
@@ -587,7 +589,16 @@ function closeManual(id){
   if(!confirm(`Đóng ${pos.side.toUpperCase()} ${pos.sym} tại giá ${fmt(pos.lastPrice)}?`))return;
   closePosition(pos,'Đóng tay',pos.lastPrice); renderPaper();
 }
-function resetPaper(){ if(!confirm('Đặt lại tài khoản ảo về 1.000.000$ và xóa hết lệnh?'))return; paper={start:1000000,balance:1000000,positions:[],history:[]}; persistPaper(); updateMini(); renderPaper(); }
+function resetPaper(){ if(!confirm('Đặt lại tài khoản về 1.000.000$ và xóa hết lệnh?'))return; paper={start:1000000,balance:1000000,positions:[],history:[]}; persistPaper(); updateMini(); renderPaper(); }
+function depositFunds(){
+  const s=prompt('Nạp thêm bao nhiêu $ vào tài khoản?','100000');
+  if(s===null)return;
+  const amt=parseFloat(String(s).replace(/[^0-9.]/g,''));
+  if(!isFinite(amt)||amt<=0){toast('Số tiền không hợp lệ');return;}
+  paper.balance+=amt; paper.start+=amt; // cộng cả vốn gốc để % lời/lỗ không bị méo
+  persistPaper(); updateMini(); renderPaper();
+  toast('Đã nạp +'+money(amt)+' $');
+}
 function renderPaper(){
   const list=$('list');
   let posMargin=0,upnl=0; paper.positions.forEach(p=>{posMargin+=p.margin;upnl+=unrealized(p);});
@@ -603,8 +614,8 @@ function renderPaper(){
     <div class="pa"><div class="k">Tổng L/L</div><div class="v ${totPnl>=0?'up':'down'}">${totPnl>=0?'+':''}${money(totPnl)} (${totPct>=0?'+':''}${totPct.toFixed(1)}%)</div></div>
     <div class="pa"><div class="k">Win rate</div><div class="v ${winRate>=50?'up':''}">${wins}/${losses} · ${winRate.toFixed(0)}%</div></div>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn gold" style="flex:1" onclick="scanCurrent()">Cập nhật giá</button><button class="btn" onclick="resetPaper()">Reset</button></div>`;
-  if(!paper.positions.length&&!paper.history.length){ html+='<div class="empty">Chưa có lệnh ảo.<br>Mở một mã ở tab thị trường → bấm <b>LONG</b> hoặc <b>SHORT</b>.</div>'; list.innerHTML=html;updateCounts();return; }
+  <div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn gold" style="flex:1" onclick="scanCurrent()">Cập nhật giá</button><button class="btn" onclick="depositFunds()">＋ Nạp tiền</button><button class="btn" onclick="resetPaper()">Reset</button></div>`;
+  if(!paper.positions.length&&!paper.history.length){ html+='<div class="empty">Chưa có lệnh nào.<br>Mở một mã ở tab thị trường → bấm <b>LONG</b> hoặc <b>SHORT</b>.</div>'; list.innerHTML=html;updateCounts();return; }
   if(paper.positions.length){
     html+='<div style="font-size:12px;color:var(--mut);margin:6px 0 8px;font-family:var(--mono)">ĐANG MỞ ('+paper.positions.length+')</div>';
     html+=paper.positions.map(p=>{
