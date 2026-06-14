@@ -157,6 +157,16 @@
 #botView .bt-cfgfield input:focus{border-color:var(--gold)}
 #botView .bt-cfghint{font-size:11.5px;color:var(--mut);margin-top:10px;line-height:1.45}
 #botView .bt-cfghint b{color:var(--gold)}
+#botView .bt-mtoggle{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
+#botView .bt-mtoggle button{border:0;background:transparent;color:var(--mut);font-size:12px;font-weight:700;padding:4px 11px;border-radius:6px;cursor:pointer;font-family:var(--sans)}
+#botView .bt-mtoggle button.on{background:var(--gold);color:#0A0F14}
+#botView .bt-symsel{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:11px 12px;font-size:14px;font-family:var(--mono);margin-bottom:12px}
+#botView .bt-chartcard .chart{width:100%;height:200px;display:block;background:var(--panel2);border-radius:10px}
+#botView .bt-cstat{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:12px;color:var(--mut)}
+#botView .bt-chip{padding:4px 9px;border-radius:7px;font-weight:700;font-size:11px}
+#botView .bt-cinfo{margin-top:10px;font-size:12.5px;color:var(--mut);line-height:1.5;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+#botView .bt-cinfo b{color:var(--txt)}
+#botView .bt-cload{color:var(--mut);font-size:13px;padding:22px 12px;text-align:center;line-height:1.5}
 #botView .bt-status{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 #botView .bt-stwrap{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
 #botView .bt-dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 0 rgba(43,216,150,.6);animation:btpulse 2.4s infinite}
@@ -777,6 +787,11 @@ load();switchTab('bot');updateMini();
   const bPrice = n => { if(n==null||isNaN(n))return"—"; const a=Math.abs(n),d=a>=1000?2:a>=1?4:a>=0.01?6:8; return Number(n).toLocaleString("en-US",{maximumFractionDigits:d}); };
   const bSigned = n => (n>0?"+":"")+bMoney(n);
   const SIG_LABEL = {buy:"Canh mua",vgt:"Vùng giá trị",short:"Short",sw:"Sideway",wait:"Chờ"};
+  const BOT_WATCH = {
+    crypto:["BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT","ADAUSDT","DOGEUSDT","AVAXUSDT","NEARUSDT","APTUSDT","SUIUSDT","TONUSDT","LINKUSDT","DOTUSDT","LTCUSDT","ATOMUSDT","UNIUSDT","ARBUSDT","OPUSDT","INJUSDT","TIAUSDT","SEIUSDT","AAVEUSDT","FILUSDT","ICPUSDT","ETCUSDT","HBARUSDT","RUNEUSDT","LDOUSDT","IMXUSDT","STXUSDT","FETUSDT","GALAUSDT","SANDUSDT","CRVUSDT","MKRUSDT","SHIBUSDT","PEPEUSDT","WIFUSDT","BONKUSDT"],
+    forex:["XAU/USD","EUR/USD","GBP/USD","USD/JPY","AUD/USD","USD/CAD"]
+  };
+  let botMkt="crypto";
 
   let lastData=null, periodDays=0, timer=null, built=false, busy=false, txMode="deposit";
 
@@ -814,6 +829,14 @@ load();switchTab('bot');updateMini();
     <div class="bt-sec">
       <div class="bt-sechead"><h3>Lệnh đang mở</h3><span class="bt-cnt" id="bt_posCnt"></span></div>
       <div id="bt_positions"></div>
+    </div>
+
+    <div class="bt-sec">
+      <div class="bt-sechead"><h3>Xem chart</h3>
+        <div class="bt-mtoggle" id="bt_mkt"><button data-m="crypto" class="on">Crypto</button><button data-m="forex">Vàng/Forex</button></div>
+      </div>
+      <select id="bt_symSel" class="bt-symsel"></select>
+      <div id="bt_chartCard" class="bt-chartcard"></div>
     </div>
 
     <div class="bt-sec">
@@ -878,6 +901,12 @@ load();switchTab('bot');updateMini();
     };
     B('bt_cfgSave').onclick = saveCfg;
     B('bt_marginMax').oninput = updateCfgHint;
+    B('bt_mkt').querySelectorAll('button').forEach(b=> b.onclick=()=>{
+      B('bt_mkt').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); botMkt=b.dataset.m; fillSymbols(); B('bt_chartCard').innerHTML='';
+    });
+    B('bt_symSel').onchange = ()=> showChart(botMkt, B('bt_symSel').value);
+    fillSymbols();
     built=true;
   }
 
@@ -997,6 +1026,72 @@ Claude ơi, dựa trên dữ liệu này hãy đề xuất tinh chỉnh tham s�
       if(d&&d.ok){ closeTx(); load(true); } else { msg.textContent=(d&&d.msg)||'Không thực hiện được.'; msg.style.color='var(--down)'; } }
     catch(e){ msg.textContent='Mất kết nối worker.'; msg.style.color='var(--down)'; }
     finally{ c.disabled=false; }
+  }
+
+  function watchList(m){ return (lastData&&lastData.watch&&lastData.watch[m]) || BOT_WATCH[m] || []; }
+  function fillSymbols(){
+    const sel=B('bt_symSel'); if(!sel) return;
+    const list=watchList(botMkt);
+    sel.innerHTML='<option value="">— Chọn mã ('+list.length+') —</option>'+list.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
+  }
+  async function showChart(mkt, sym){
+    const card=B('bt_chartCard'); if(!card) return;
+    if(!sym){ card.innerHTML=''; return; }
+    card.innerHTML='<div class="bt-cload">Đang tải chart '+sym+'…</div>';
+    try{
+      const r=await analyze(mkt, sym);            // hàm global của app
+      const pos=((lastData&&lastData.positions)||[]).find(p=>p.sym===sym);
+      const buyish=(r.cls==='buy'||r.cls==='vgt');
+      const chipCol = buyish ? 'background:rgba(43,216,150,.15);color:var(--up)'
+                    : r.cls==='out' ? 'background:rgba(255,90,110,.15);color:var(--down)'
+                    : 'background:var(--panel2);color:var(--mut)';
+      let posHtml='';
+      if(pos){
+        const last=(pos.last!=null&&!isNaN(pos.last))?pos.last:pos.entry;
+        const pn=(pos.side==='long'?1:-1)*(last-pos.entry)*((pos.qtyLeft!=null)?pos.qtyLeft:0);
+        posHtml='<div class="bt-cinfo">📌 Bot đang giữ <b>'+(pos.side==='long'?'LONG':'SHORT')+'</b> · giá hiện tại '+fmt(last)+' · lời/lỗ tạm tính <b class="'+(pn>=0?'up':'down')+'">'+(pn>=0?'+':'')+bMoney(pn)+' $</b><br>Các đường <b style="color:var(--gold)">Vào</b> · <b style="color:var(--down)">SL</b> · <b style="color:var(--up)">TP</b> hiển thị ngay trên chart.</div>';
+      }
+      card.innerHTML='<canvas class="chart" id="cv-'+cssId(sym)+'"></canvas>'
+        +'<div class="bt-cstat"><span class="bt-chip" style="'+chipCol+'">'+r.chip+'</span>'
+        +'<span>H4: '+r.f4.state+' · H1: '+r.f1.state+' · Giá '+fmt(r.price)+'</span></div>'+posHtml;
+      drawBotChart(sym, r, pos);                   // nến + EMA + Vào/SL/TP
+    }catch(e){
+      card.innerHTML='<div class="bt-cload">Không tải được '+sym+': '+((e&&e.message)||'lỗi')
+        +(mkt==='forex'?'<br>(Chart Vàng/Forex cần nhập API key Twelve Data ở tab Vàng/Forex trước.)':'')+'</div>';
+    }
+  }
+
+  function drawBotChart(sym, r, pos){
+    const cv=B('cv-'+cssId(sym)); if(!cv||!r||r.err||!r.h4||!r.h4.length) return;
+    const dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+    cv.width=W*dpr; cv.height=H*dpr;
+    const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    const N=90, cd=r.h4.slice(-N), e34=r.e34_4.slice(-N), e89=r.e89_4.slice(-N);
+    let lo=Math.min.apply(null,cd.map(c=>c.l)), hi=Math.max.apply(null,cd.map(c=>c.h));
+    const levels=[];
+    if(pos){
+      levels.push({p:+pos.entry,col:'#E8B33C',lbl:'Vào'});
+      if(pos.sl!=null)  levels.push({p:+pos.sl, col:'#FF5A6E',lbl:'SL'});
+      if(pos.tp1!=null) levels.push({p:+pos.tp1,col:'#2BD896',lbl:'TP1'});
+      if(pos.tp2!=null) levels.push({p:+pos.tp2,col:'#2BD896',lbl:'TP2'});
+    }
+    levels.forEach(l=>{ if(isFinite(l.p)){ lo=Math.min(lo,l.p); hi=Math.max(hi,l.p); } });
+    const pad=(hi-lo)*0.06||1; lo-=pad; hi+=pad;
+    const padL=6,padR=58,padT=8,padB=8, cw=(W-padL-padR)/N, y=p=>padT+(1-(p-lo)/(hi-lo))*(H-padT-padB);
+    const MONO=getComputedStyle(document.body).getPropertyValue('--mono'); ctx.font='9px '+MONO;
+    levels.forEach(l=>{ const yy=y(l.p); ctx.strokeStyle=l.col; ctx.setLineDash([5,3]); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(W-padR,yy); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=l.col; ctx.fillText(l.lbl+' '+fmt(l.p), padL+3, Math.max(10,yy-3)); });
+    cd.forEach((c,i)=>{ const x=padL+i*cw+cw/2, up=c.c>=c.o; ctx.strokeStyle=ctx.fillStyle=up?'#2BD896':'#FF5A6E'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x,y(c.h)); ctx.lineTo(x,y(c.l)); ctx.stroke();
+      const bw=Math.max(1.5,cw*0.6),yo=y(c.o),yc=y(c.c); ctx.fillRect(x-bw/2,Math.min(yo,yc),bw,Math.max(1,Math.abs(yc-yo))); });
+    const line=(arr,col)=>{ ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.beginPath(); let st=false;
+      arr.forEach((v,i)=>{ if(v==null)return; const x=padL+i*cw+cw/2; if(!st){ctx.moveTo(x,y(v));st=true;} else ctx.lineTo(x,y(v)); }); ctx.stroke(); };
+    line(e34,'#E8B33C'); line(e89,'#4D9FFF');
+    const cc=cd[cd.length-1].c; ctx.fillStyle='#D7E2EC'; ctx.fillRect(W-padR,y(cc)-8,padR,16);
+    ctx.fillStyle='#0A0F14'; ctx.font='bold 10px '+MONO; ctx.fillText(fmt(cc),W-padR+3,y(cc)+3.5);
+    ctx.font='9px '+MONO; ctx.fillStyle='#E8B33C'; ctx.fillText('EMA34',padL+4,12);
+    ctx.fillStyle='#4D9FFF'; ctx.fillText('EMA89',padL+44,12); ctx.fillStyle='#6B7C8C'; ctx.fillText('H4·'+N,padL+84,12);
   }
 
   function fillCfg(d){
