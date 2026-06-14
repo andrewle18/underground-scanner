@@ -366,9 +366,12 @@ async function scanCurrent(){
   if(!list.length){toast('Danh mục trống — thêm mã trước');return;}
   scanning=true;$('btnScan').textContent='...';$('scanState').textContent='⏳ đang quét...';
   const errs=[],twelve=LIBRARY[mkt].source==='twelve';
-  for(let i=0;i<list.length;i++){
-    const sym=list[i];
-    $('scanState').textContent=`⏳ ${i+1}/${list.length} · ${sym}`;
+  // Ưu tiên quét trước các mã đang có vị thế mở (để cập nhật TP/SL sớm), rồi tới các mã còn lại
+  const held=new Set(paper.positions.filter(p=>p.mkt===mkt).map(p=>p.sym));
+  const list2=[...list].sort((a,b)=>(held.has(b)?1:0)-(held.has(a)?1:0));
+  for(let i=0;i<list2.length;i++){
+    const sym=list2[i];
+    $('scanState').textContent=`⏳ ${i+1}/${list2.length} · ${sym}${held.has(sym)?' ★':''}`;
     try{
       const r=await analyze(mkt,sym);
       const key=mkt+':'+sym;
@@ -377,7 +380,7 @@ async function scanCurrent(){
       managePositions(mkt,sym,r.price);
     }catch(e){results[mkt][sym]={sym,mkt,err:e.message,cls:'err',chip:'LỖI'};errs.push(sym);}
     if(cur===mkt||cur==='paper')render();
-    if(twelve&&i<list.length-1)await sleep(8000);
+    if(twelve&&i<list2.length-1)await sleep(8000);
   }
   $('lastScan').textContent='Quét '+LIBRARY[mkt].label+' lúc '+new Date().toLocaleTimeString('vi-VN');
   $('scanState').textContent=errs.length?('⚠ lỗi: '+errs.join(', ')):'✓ xong';
