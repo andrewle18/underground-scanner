@@ -145,6 +145,105 @@
   .ptag.win{background:rgba(43,216,150,.16);color:var(--up)} .ptag.loss{background:rgba(255,90,110,.14);color:var(--down)} .ptag.be{background:#1a2530;color:var(--mut)} .ptag.tp1{background:rgba(232,179,60,.16);color:var(--gold)} .ptag.liq{background:#3a0d12;color:var(--down)}
   .pclose{font-size:11px;color:var(--down);cursor:pointer;font-family:var(--mono);opacity:.75}
   @media(max-width:480px){ canvas.chart{height:200px} }
+/* ===================== BOT 24/7 TAB ===================== */
+#botView{padding-bottom:30px}
+#botView .bt-cfgsave{border:1px solid var(--gold);background:transparent;color:var(--gold);font-weight:700;font-size:12px;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:var(--sans)}
+#botView .bt-cfgsave:active{transform:scale(.96)}
+#botView .bt-cfgsave:disabled{opacity:.6}
+#botView .bt-cfgrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#botView .bt-cfgfield{display:flex;flex-direction:column;gap:6px}
+#botView .bt-cfgfield span{font-size:11px;color:var(--mut)}
+#botView .bt-cfgfield input{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:11px 12px;font-size:16px;font-weight:700;font-family:var(--mono);outline:none;width:100%}
+#botView .bt-cfgfield input:focus{border-color:var(--gold)}
+#botView .bt-cfghint{font-size:11.5px;color:var(--mut);margin-top:10px;line-height:1.45}
+#botView .bt-cfghint b{color:var(--gold)}
+#botView .bt-status{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+#botView .bt-stwrap{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
+#botView .bt-dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 0 rgba(43,216,150,.6);animation:btpulse 2.4s infinite}
+#botView .bt-dot.bad{background:var(--down);animation:none}
+#botView .bt-dot.wait{background:var(--warn);animation:none}
+@keyframes btpulse{0%{box-shadow:0 0 0 0 rgba(43,216,150,.55)}70%{box-shadow:0 0 0 9px rgba(43,216,150,0)}100%{box-shadow:0 0 0 0 rgba(43,216,150,0)}}
+#botView .bt-refresh{border:1px solid var(--line);background:var(--panel);color:var(--txt);width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:15px;line-height:1}
+#botView .bt-refresh:active{transform:scale(.94)}
+#botView .bt-hero{background:radial-gradient(140% 100% at 100% 0%,rgba(232,179,60,.10),transparent 55%),var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px 16px}
+#botView .bt-eyebrow{font-size:10.5px;letter-spacing:2px;color:var(--mut);text-transform:uppercase;font-weight:600}
+#botView .bt-equity{font-family:var(--mono);font-weight:700;font-size:clamp(32px,10vw,48px);line-height:1;margin-top:8px;letter-spacing:-1px;color:var(--txt)}
+#botView .bt-equity .bt-cur{font-size:.42em;color:var(--mut);font-weight:500;margin-left:6px}
+#botView .bt-delta{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+#botView .bt-pct{font-family:var(--mono);padding:3px 9px;border-radius:8px;font-size:13px}
+#botView .up{color:var(--up)} #botView .down{color:var(--down)}
+#botView .bt-pct.up{background:rgba(43,216,150,.12)} #botView .bt-pct.down{background:rgba(255,90,110,.12)}
+#botView .bt-barwrap{margin-top:14px;height:6px;border-radius:6px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+#botView .bt-bar{height:100%;width:0;border-radius:6px;transition:width .6s ease}
+#botView .bt-ministats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:16px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--line)}
+#botView .bt-ms{background:var(--panel2);padding:11px}
+#botView .bt-ms .k{font-size:10px;color:var(--mut);letter-spacing:.3px;text-transform:uppercase}
+#botView .bt-ms .v{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:5px}
+#botView .bt-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+#botView .bt-actions button{border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:12px;border-radius:11px;font-weight:600;font-size:14px;cursor:pointer}
+#botView .bt-actions .dep:active,#botView .bt-actions .wd:active{transform:scale(.97)}
+#botView .bt-sec{margin-top:22px}
+#botView .bt-sechead{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 10px}
+#botView .bt-sechead h3{font-size:14px;font-weight:700;color:var(--txt)}
+#botView .bt-cnt{font-family:var(--mono);font-size:12px;color:var(--mut)}
+#botView .bt-pos{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px}
+#botView .bt-pos-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#botView .bt-symwrap{display:flex;align-items:center;gap:9px;min-width:0}
+#botView .bt-sd{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:6px;flex:none}
+#botView .bt-sd.long{color:var(--up);background:rgba(43,216,150,.12)}
+#botView .bt-sd.short{color:var(--down);background:rgba(255,90,110,.12)}
+#botView .bt-sy{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+#botView .bt-mkt{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
+#botView .bt-pn{text-align:right;flex:none}
+#botView .bt-pn .amt{font-family:var(--mono);font-weight:700;font-size:15px}
+#botView .bt-pn .pp{font-family:var(--mono);font-size:11px;color:var(--mut)}
+#botView .bt-pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+#botView .bt-cell .k{font-size:9.5px;color:var(--mut);letter-spacing:.4px;text-transform:uppercase}
+#botView .bt-cell .v{font-family:var(--mono);font-size:12px;margin-top:3px;color:var(--txt)}
+#botView .bt-cell .v.sl{color:var(--down)} #botView .bt-cell .v.tp{color:var(--up)}
+#botView .bt-statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+#botView .bt-stat{background:var(--panel);padding:12px}
+#botView .bt-stat .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.3px}
+#botView .bt-stat .v{font-family:var(--mono);font-weight:700;font-size:17px;margin-top:5px;color:var(--txt)}
+#botView .bt-stat .v small{font-size:11px;color:var(--mut)}
+#botView .bt-curvebox{margin-top:13px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 13px 5px}
+#botView .bt-curvehead{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-bottom:5px}
+#botView .bt-breakwrap{margin-top:13px;display:grid;gap:10px}
+#botView .bt-break{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px}
+#botView .bt-break .bt-h{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+#botView .bt-brow{margin-bottom:10px}#botView .bt-brow:last-child{margin-bottom:0}
+#botView .bt-lab{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+#botView .bt-lab .nm{color:var(--txt);font-weight:500}
+#botView .bt-lab .mt{font-family:var(--mono);color:var(--mut);font-size:11px}
+#botView .bt-track{height:7px;border-radius:5px;background:var(--panel2);overflow:hidden;display:flex}
+#botView .bt-track i{height:100%;display:block}
+#botView .bt-track .w{background:var(--up)} #botView .bt-track .l{background:var(--down)}
+#botView .bt-export{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+#botView .bt-export button{border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:12px;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer}
+#botView .bt-period{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
+#botView .bt-period button{border:0;background:transparent;color:var(--mut);font-size:11px;font-family:var(--mono);padding:4px 9px;border-radius:6px;cursor:pointer}
+#botView .bt-period button.on{background:var(--gold);color:#1a1102;font-weight:700}
+#botView .bt-empty{text-align:center;color:var(--mut);font-size:13px;padding:24px 16px;border:1px dashed var(--line);border-radius:13px;background:var(--panel2)}
+#botView .bt-banner{display:none;margin-top:14px;background:rgba(255,157,77,.08);border:1px solid rgba(255,157,77,.3);border-radius:11px;padding:13px 14px;font-size:12.5px;line-height:1.5;color:#ffd9a3}
+#botView .bt-banner code{font-family:var(--mono);background:#1b1408;color:var(--warn);padding:1px 6px;border-radius:5px}
+#botView .bt-hist{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+#botView .bt-hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+#botView .bt-hrow:last-child{border-bottom:0}
+#botView .bt-htime{font-size:11px;color:var(--mut);font-family:var(--mono)}
+#botModal{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,10,.62)}
+#botModal[hidden]{display:none}
+#botModal .bt-sheet{width:100%;max-width:640px;background:var(--panel);border:1px solid var(--line);border-radius:16px 16px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom))}
+#botModal .bt-sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+#botModal .bt-sheet-head span{font-weight:700;font-size:17px;color:var(--txt)}
+#botModal .bt-x{border:0;background:var(--panel2);color:var(--mut);width:30px;height:30px;border-radius:8px;cursor:pointer}
+#botModal label{display:block;font-size:12px;color:var(--mut);margin-bottom:8px}
+#botModal .bt-txinput{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--txt);font-size:23px;font-weight:700;padding:13px 14px;outline:none;font-family:var(--mono)}
+#botModal .bt-txinput:focus{border-color:var(--gold)}
+#botModal .bt-txquick{display:flex;gap:8px;margin-top:11px}
+#botModal .bt-txquick button{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:9px 4px;font-size:12px;font-family:var(--mono);cursor:pointer}
+#botModal .bt-txconfirm{width:100%;margin-top:15px;border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;color:#1a1102;background:var(--gold)}
+#botModal .bt-txconfirm.wd{background:var(--warn)}
+#botModal .bt-txmsg{text-align:center;font-size:12px;margin-top:10px;min-height:15px}
 </style>
 </head>
 <body>
@@ -154,7 +253,8 @@
     <span class="sub">Đứng ngoài cũng là một vị thế</span>
   </div>
   <div class="tabs">
-    <button class="tab active" data-tab="crypto" onclick="switchTab('crypto')">Crypto <span class="cnt" id="cnt-crypto"></span></button>
+    <button class="tab active" data-tab="bot" onclick="switchTab('bot')">Bot 24/7 <span class="cnt" id="cnt-bot"></span></button>
+    <button class="tab" data-tab="crypto" onclick="switchTab('crypto')">Crypto <span class="cnt" id="cnt-crypto"></span></button>
     <button class="tab" data-tab="forex" onclick="switchTab('forex')">Vàng/Forex <span class="cnt" id="cnt-forex"></span></button>
     <button class="tab" data-tab="stock" onclick="switchTab('stock')">CK Mỹ <span class="cnt" id="cnt-stock"></span></button>
     <button class="tab" data-tab="paper" onclick="switchTab('paper')">Tài khoản <span class="cnt" id="cnt-paper"></span></button>
@@ -181,6 +281,7 @@
     <div class="riskline">Tài khoản: <b id="equityMini">—</b> · Quy tắc 2%: mỗi lệnh chỉ mất tối đa <b id="riskUsd">—</b> tính trên equity. SL xa thì hạ vốn/đòn bẩy, không nới SL.</div>
   </div>
   <div id="list"></div>
+  <div id="botView" style="display:none"></div>
 </main>
 <footer>
   Crypto từ Binance (miễn phí). Vàng/Forex/CK Mỹ từ Twelve Data (free 8 gọi/phút, app tự giãn nhịp). CK Mỹ chỉ chạy giờ giao dịch Mỹ.
@@ -423,11 +524,15 @@ function addCustomFromSearch(){ let s=$('libSearch').value.trim().toUpperCase();
 /* ===== TAB & RENDER ===== */
 function switchTab(m){
   cur=m; document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===m));
-  const isPaper=(m==='paper');
-  $('keybar').classList.toggle('show',!isPaper&&LIBRARY[m]&&LIBRARY[m].source==='twelve'&&!tdKey);
-  $('mktToolbar').style.display=isPaper?'none':'flex';
-  $('riskPanel').style.display=isPaper?'none':'grid';
-  if(!isPaper)fillWlSelect();
+  const isPaper=(m==='paper'); const isBot=(m==='bot'); const isMkt=!isPaper&&!isBot;
+  $('keybar').classList.toggle('show',isMkt&&LIBRARY[m]&&LIBRARY[m].source==='twelve'&&!tdKey);
+  $('mktToolbar').style.display=isMkt?'flex':'none';
+  $('riskPanel').style.display=isMkt?'grid':'none';
+  $('list').style.display=isBot?'none':'block';
+  $('botView').style.display=isBot?'block':'none';
+  if(isMkt)fillWlSelect();
+  if(isBot){ if(window.botEnter)botEnter(); return; }
+  if(window.botLeave)botLeave();
   render();
 }
 function lightCls(f){if(!f||f.state==='NA')return'';if(f.sideway)return'on-sw';return f.state==='UP'?'on-up':f.state==='DOWN'?'on-down':'on-mid';}
@@ -658,7 +763,295 @@ function toggleSound(){soundOn=!soundOn;$('btnSound').textContent=soundOn?'🔔'
 function saveKey(){tdKey=$('tdKey').value.trim();try{localStorage.setItem('ug_tdkey',tdKey);}catch(e){}if(tdKey){$('keybar').classList.remove('show');toast('Đã lưu API key');}}
 window.addEventListener('resize',()=>{document.querySelectorAll('.card.open').forEach(c=>drawChart(c.dataset.sym));});
 
-load();switchTab('crypto');updateMini();
+load();switchTab('bot');updateMini();
+</script>
+<script>
+/* ===================== BOT 24/7 MODULE ===================== */
+(function(){
+  const WORKER_URL = "https://andrew-scanner-bot.lehunglinh18.workers.dev";
+  const BOT_START  = 1000000;   // vốn gốc dự phòng nếu worker chưa trả 'start'
+  const REFRESH_MS = 30000;
+
+  const B = id => document.getElementById(id);
+  const bMoney = n => (n==null||isNaN(n)) ? "—" : Number(n).toLocaleString("en-US",{maximumFractionDigits:2});
+  const bPrice = n => { if(n==null||isNaN(n))return"—"; const a=Math.abs(n),d=a>=1000?2:a>=1?4:a>=0.01?6:8; return Number(n).toLocaleString("en-US",{maximumFractionDigits:d}); };
+  const bSigned = n => (n>0?"+":"")+bMoney(n);
+  const SIG_LABEL = {buy:"Canh mua",vgt:"Vùng giá trị",short:"Short",sw:"Sideway",wait:"Chờ"};
+
+  let lastData=null, periodDays=0, timer=null, built=false, busy=false, txMode="deposit";
+
+  const MARKUP = `
+    <div class="bt-status">
+      <div class="bt-stwrap"><span class="bt-dot wait" id="bt_dot"></span><span id="bt_stTxt">Đang kết nối…</span></div>
+      <button class="bt-refresh" id="bt_refresh" title="Cập nhật">⟳</button>
+    </div>
+    <div class="bt-hero">
+      <div class="bt-eyebrow">Tổng tài sản · Equity</div>
+      <div class="bt-equity"><span id="bt_equity">—</span><span class="bt-cur">$</span></div>
+      <div class="bt-delta"><span id="bt_deltaPct" class="bt-pct">—</span><span id="bt_deltaAbs"></span></div>
+      <div class="bt-barwrap"><div class="bt-bar" id="bt_bar"></div></div>
+      <div class="bt-ministats">
+        <div class="bt-ms"><div class="k">Số dư khả dụng</div><div class="v" id="bt_balance">—</div></div>
+        <div class="bt-ms"><div class="k">Lệnh đang mở</div><div class="v" id="bt_open">—</div></div>
+        <div class="bt-ms"><div class="k">Lời/lỗ chưa chốt</div><div class="v" id="bt_unreal">—</div></div>
+      </div>
+      <div class="bt-actions">
+        <button class="dep" id="bt_dep">↓ Nạp tiền</button>
+        <button class="wd" id="bt_wd">↑ Rút tiền</button>
+      </div>
+      <div class="bt-banner" id="bt_banner"></div>
+    </div>
+
+    <div class="bt-sec bt-cfg">
+      <div class="bt-sechead"><h3>Cấu hình lệnh</h3><button class="bt-cfgsave" id="bt_cfgSave">Lưu</button></div>
+      <div class="bt-cfgrow">
+        <label class="bt-cfgfield"><span>Rủi ro mỗi lệnh (%)</span><input id="bt_risk" type="number" inputmode="decimal" step="0.1" min="0.1" placeholder="2"></label>
+        <label class="bt-cfgfield"><span>Vốn tối đa mỗi lệnh ($)</span><input id="bt_marginMax" type="number" inputmode="numeric" min="1" placeholder="100000"></label>
+      </div>
+      <div class="bt-cfghint" id="bt_cfgHint">Vốn tối đa = mức ký quỹ lớn nhất bot bỏ vào 1 lệnh.</div>
+    </div>
+
+    <div class="bt-sec">
+      <div class="bt-sechead"><h3>Lệnh đang mở</h3><span class="bt-cnt" id="bt_posCnt"></span></div>
+      <div id="bt_positions"></div>
+    </div>
+
+    <div class="bt-sec">
+      <div class="bt-sechead"><h3>Hiệu suất bot</h3>
+        <div class="bt-period" id="bt_period"><button data-d="7">7N</button><button data-d="30">30N</button><button data-d="0" class="on">Tất cả</button></div>
+      </div>
+      <div class="bt-statgrid" id="bt_statgrid"></div>
+      <div class="bt-curvebox"><div class="bt-curvehead"><span>Đường cong vốn</span><span id="bt_ddTxt" style="font-family:var(--mono)"></span></div>
+        <svg id="bt_curve" viewBox="0 0 600 150" preserveAspectRatio="none" width="100%" height="150"></svg></div>
+      <div class="bt-breakwrap">
+        <div class="bt-break"><div class="bt-h">Theo loại tín hiệu</div><div id="bt_bySignal"></div></div>
+        <div class="bt-break"><div class="bt-h">Theo thị trường</div><div id="bt_byMarket"></div></div>
+        <div class="bt-break"><div class="bt-h">Theo lý do đóng</div><div id="bt_byReason"></div></div>
+        <div class="bt-break"><div class="bt-h">Long / Short</div><div id="bt_bySide"></div></div>
+      </div>
+      <div class="bt-export">
+        <button id="bt_dl">Tải dữ liệu (.json)</button>
+        <button id="bt_copy">Copy tóm tắt gửi Claude</button>
+      </div>
+    </div>
+
+    <div class="bt-sec">
+      <div class="bt-sechead"><h3>Lịch sử gần đây</h3><span class="bt-cnt" id="bt_histCnt"></span></div>
+      <div id="bt_history"></div>
+    </div>`;
+
+  const MODAL = `
+    <div id="botModal" hidden><div class="bt-sheet">
+      <div class="bt-sheet-head"><span id="bt_txTitle">Nạp tiền</span><button class="bt-x" id="bt_txClose">✕</button></div>
+      <label id="bt_txLabel">Số tiền nạp ($)</label>
+      <input id="bt_txAmt" class="bt-txinput" type="number" inputmode="decimal" placeholder="0" min="0">
+      <div class="bt-txquick" id="bt_quick"><button data-v="100000">+100K</button><button data-v="500000">+500K</button><button data-v="1000000">+1Tr</button></div>
+      <button class="bt-txconfirm" id="bt_txConfirm">Nạp vào tài khoản</button>
+      <div class="bt-txmsg" id="bt_txMsg"></div>
+    </div></div>`;
+
+  function build(){
+    if(built) return;
+    B('botView').innerHTML = MARKUP;
+    document.body.insertAdjacentHTML('beforeend', MODAL);
+    B('bt_refresh').onclick = ()=>load(true);
+    B('bt_dep').onclick = ()=>openTx('deposit');
+    B('bt_wd').onclick  = ()=>openTx('withdraw');
+    B('bt_txClose').onclick = closeTx;
+    B('bt_txConfirm').onclick = confirmTx;
+    B('botModal').addEventListener('click', e=>{ if(e.target.id==='botModal') closeTx(); });
+    B('bt_quick').querySelectorAll('button').forEach(b=> b.onclick=()=>{ B('bt_txAmt').value=b.dataset.v; });
+    B('bt_period').querySelectorAll('button').forEach(b=> b.onclick=()=>{
+      B('bt_period').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); periodDays=+b.dataset.d; renderStats();
+    });
+    B('bt_dl').onclick = ()=>{
+      const data=JSON.stringify({exportedAt:new Date().toISOString(),start:lastData&&lastData.start,balance:lastData&&lastData.balance,equity:lastData&&lastData.equity,trades:(lastData&&lastData.history)||[]},null,2);
+      const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+      a.download='bot-trades-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(a.href);
+    };
+    B('bt_copy').onclick = async ()=>{
+      const t=buildSummary();
+      try{ await navigator.clipboard.writeText(t); B('bt_copy').textContent='Đã copy ✓'; }
+      catch(e){ prompt('Copy đoạn này gửi Claude:', t); }
+      setTimeout(()=>B('bt_copy').textContent='Copy tóm tắt gửi Claude',1600);
+    };
+    B('bt_cfgSave').onclick = saveCfg;
+    B('bt_marginMax').oninput = updateCfgHint;
+    built=true;
+  }
+
+  function setStatus(state,txt){ const d=B('bt_dot'); if(d)d.className='bt-dot '+(state==='ok'?'':state); const t=B('bt_stTxt'); if(t)t.textContent=txt; }
+  function showBanner(){ const b=B('bt_banner'); b.style.display='block';
+    b.innerHTML='<b>Chưa đọc được dữ liệu bot.</b> Kiểm tra worker đã Deploy và đang chạy. Nếu vừa sửa, đợi 1 phút rồi bấm ⟳.'; }
+  function hideBanner(){ B('bt_banner').style.display='none'; }
+
+  function pnlOf(p){ const e=+p.entry,l=(p.last!=null&&!isNaN(p.last))?+p.last:e,q=(p.qtyLeft!=null)?+p.qtyLeft:(p.qty!=null?+p.qty:0),d=(p.side==='long')?1:-1; return d*(l-e)*q; }
+
+  function renderHero(d){
+    const eq=+d.equity, bal=+d.balance;
+    const base=(d.start!=null&&!isNaN(d.start))?+d.start:BOT_START;
+    B('bt_equity').textContent=bMoney(eq);
+    B('bt_balance').textContent=bMoney(bal)+' $';
+    const diff=eq-base, p=base?diff/base*100:0, up=diff>=0;
+    const pe=B('bt_deltaPct'); pe.textContent=(up?'▲ +':'▼ ')+p.toFixed(2)+'%'; pe.className='bt-pct '+(up?'up':'down');
+    const ae=B('bt_deltaAbs'); ae.textContent=bSigned(diff)+' $ so với vốn đầu'; ae.className=up?'up':'down';
+    const bar=B('bt_bar'); bar.style.width=Math.max(0,Math.min(100,(eq/base)*50))+'%';
+    bar.style.background=up?'linear-gradient(90deg,#1b9c78,var(--up))':'linear-gradient(90deg,#a33,var(--down))';
+    const pos=d.positions||[]; B('bt_open').textContent=pos.length;
+    const un=pos.reduce((s,x)=>s+pnlOf(x),0); const ue=B('bt_unreal'); ue.textContent=bSigned(un)+' $'; ue.className='v '+(un>=0?'up':'down');
+  }
+  function renderPositions(pos){
+    pos=pos||[]; B('bt_posCnt').textContent=pos.length?pos.length+' lệnh':'';
+    const w=B('bt_positions');
+    if(!pos.length){ w.innerHTML='<div class="bt-empty">Bot chưa mở lệnh nào — đang chờ tín hiệu.</div>'; return; }
+    w.innerHTML=pos.map(p=>{ const pn=pnlOf(p),up=pn>=0,pp=p.margin?pn/p.margin*100:0,last=(p.last!=null&&!isNaN(p.last))?p.last:p.entry;
+      return `<div class="bt-pos"><div class="bt-pos-top"><div class="bt-symwrap"><span class="bt-sd ${p.side==='long'?'long':'short'}">${p.side==='long'?'LONG':'SHORT'}</span><div style="min-width:0"><div class="bt-sy">${p.sym||'—'}</div><div class="bt-mkt">${p.market||''}</div></div></div><div class="bt-pn"><div class="amt ${up?'up':'down'}">${bSigned(pn)} $</div><div class="pp">${(up?'+':'')+pp.toFixed(1)}%</div></div></div>
+      <div class="bt-pgrid"><div class="bt-cell"><div class="k">Vào lệnh</div><div class="v">${bPrice(p.entry)}</div></div><div class="bt-cell"><div class="k">Hiện tại</div><div class="v">${bPrice(last)}</div></div><div class="bt-cell"><div class="k">Cắt lỗ</div><div class="v sl">${bPrice(p.sl)}</div></div><div class="bt-cell"><div class="k">Chốt lời</div><div class="v tp">${bPrice(p.tp1)}</div></div></div></div>`;
+    }).join('');
+  }
+  function renderHistory(h){
+    h=h||[]; B('bt_histCnt').textContent=h.length?h.length+' mục':'';
+    const w=B('bt_history');
+    if(!h.length){ w.innerHTML='<div class="bt-empty">Chưa có lệnh nào được chốt.</div>'; return; }
+    w.innerHTML='<div class="bt-hist">'+h.slice(0,25).map(t=>{
+      const pn=(t.pnl!=null)?t.pnl:null,up=pn==null?null:pn>=0;
+      const sd=t.side?`<span class="bt-sd ${t.side==='long'?'long':'short'}">${t.side==='long'?'LONG':'SHORT'}</span>`:'';
+      const tm=t.closed?new Date(t.closed).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+      const amt=pn==null?'':`<div style="font-family:var(--mono);font-weight:600;font-size:13px" class="${up?'up':'down'}">${bSigned(pn)} $</div>`;
+      return `<div class="bt-hrow"><div class="bt-symwrap">${sd}<div style="min-width:0"><div class="bt-sy" style="font-size:13px">${t.sym||'—'}</div><div class="bt-htime">${tm}${t.reason?' · '+t.reason:''}${t.sig&&SIG_LABEL[t.sig]?' · '+SIG_LABEL[t.sig]:''}</div></div></div>${amt}</div>`;
+    }).join('')+'</div>';
+  }
+
+  function closedTrades(){ let h=(lastData&&lastData.history)?lastData.history.slice():[]; h=h.filter(t=>t&&typeof t==='object'&&t.pnl!=null&&!isNaN(t.pnl));
+    if(periodDays>0){ const c=Date.now()-periodDays*86400000; h=h.filter(t=>(t.closed||0)>=c); } return h; }
+  const pct=(n,d)=>d?n/d*100:0;
+  function groupBy(h,fn){ const m={}; h.forEach(t=>{const k=fn(t);(m[k]=m[k]||{n:0,w:0,net:0});m[k].n++;if(t.pnl>0)m[k].w++;m[k].net+=t.pnl;});
+    return Object.entries(m).map(([name,o])=>({name,...o,wr:pct(o.w,o.n)})).sort((a,b)=>b.n-a.n); }
+  function renderBreak(id,rows){ const el=B(id);
+    if(!rows.length){ el.innerHTML='<div class="bt-lab"><span class="mt">Chưa có dữ liệu</span></div>'; return; }
+    el.innerHTML=rows.map(r=>`<div class="bt-brow"><div class="bt-lab"><span class="nm">${r.name}</span><span class="mt">${r.n} lệnh · WR ${r.wr.toFixed(0)}% · ${r.net>=0?'+':''}${bMoney(r.net)}$</span></div><div class="bt-track"><i class="w" style="width:${r.wr}%"></i><i class="l" style="width:${100-r.wr}%"></i></div></div>`).join(''); }
+
+  function renderStats(){
+    const base=(lastData&&lastData.start!=null&&!isNaN(lastData.start))?+lastData.start:BOT_START;
+    const h=closedTrades(), n=h.length;
+    const wins=h.filter(t=>t.pnl>0), losses=h.filter(t=>t.pnl<0);
+    const gW=wins.reduce((s,t)=>s+t.pnl,0), gL=Math.abs(losses.reduce((s,t)=>s+t.pnl,0));
+    const net=h.reduce((s,t)=>s+t.pnl,0), wr=pct(wins.length,n);
+    const pf=gL>0?gW/gL:(gW>0?Infinity:0), expc=n?net/n:0;
+    const aW=wins.length?gW/wins.length:0, aL=losses.length?gL/losses.length:0, payoff=aL>0?aW/aL:(aW>0?Infinity:0);
+    const F=v=>v===Infinity?'∞':v.toFixed(2);
+    const cards=[
+      {k:'Số lệnh đóng',v:n},{k:'Tỉ lệ thắng',v:wr.toFixed(1)+'<small>%</small>',up:wr>=50},
+      {k:'Profit factor',v:F(pf),up:pf>=1},{k:'Kỳ vọng/lệnh',v:(expc>=0?'+':'')+bMoney(expc),up:expc>=0},
+      {k:'Lãi/lỗ ròng',v:(net>=0?'+':'')+bMoney(net),up:net>=0},{k:'Lời TB/Lỗ TB',v:F(payoff),up:payoff>=1},
+    ];
+    B('bt_statgrid').innerHTML=cards.map(s=>`<div class="bt-stat"><div class="k">${s.k}</div><div class="v ${s.up==null?'':(s.up?'up':'down')}">${s.v}</div></div>`).join('');
+    drawCurve(h,base);
+    renderBreak('bt_bySignal',groupBy(h,t=>SIG_LABEL[t.sig]||'—'));
+    renderBreak('bt_byMarket',groupBy(h,t=>t.mkt||t.market||'khác'));
+    renderBreak('bt_byReason',groupBy(h,t=>t.reason||'—'));
+    renderBreak('bt_bySide',groupBy(h,t=>t.side==='long'?'Long':t.side==='short'?'Short':'—'));
+  }
+  function drawCurve(h,base){
+    const svg=B('bt_curve'),W=600,H=150,pad=6;
+    const ch=h.slice().sort((a,b)=>(a.closed||0)-(b.closed||0));
+    let eq=base; const pts=[{eq}]; ch.forEach(t=>{eq+=t.pnl;pts.push({eq});});
+    if(pts.length<2){ svg.innerHTML=`<text x="${W/2}" y="${H/2}" fill="#6B7C8C" font-size="13" text-anchor="middle">Chưa đủ lệnh để vẽ</text>`; B('bt_ddTxt').textContent=''; return; }
+    const ys=pts.map(p=>p.eq),mn=Math.min(...ys),mx=Math.max(...ys),sp=(mx-mn)||1;
+    const X=i=>pad+i*(W-2*pad)/(pts.length-1), Y=v=>pad+(1-(v-mn)/sp)*(H-2*pad);
+    const line=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.eq).toFixed(1)}`).join(' ');
+    const up=pts[pts.length-1].eq>=base, col=up?'#2BD896':'#FF5A6E', bY=Y(base).toFixed(1);
+    let peak=-Infinity,dd=0; pts.forEach(p=>{peak=Math.max(peak,p.eq);dd=Math.max(dd,(peak-p.eq)/peak*100);});
+    B('bt_ddTxt').textContent='Sụt tối đa '+dd.toFixed(1)+'%';
+    svg.innerHTML=`<defs><linearGradient id="btg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".22"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs><line x1="${pad}" y1="${bY}" x2="${W-pad}" y2="${bY}" stroke="#2a3650" stroke-width="1" stroke-dasharray="4 4"/><path d="${line} L${X(pts.length-1).toFixed(1)},${H-pad} L${X(0).toFixed(1)},${H-pad} Z" fill="url(#btg)"/><path d="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+  }
+  function buildSummary(){
+    const base=(lastData&&lastData.start!=null)?+lastData.start:BOT_START;
+    const h=closedTrades(),n=h.length,wins=h.filter(t=>t.pnl>0).length,net=h.reduce((s,t)=>s+t.pnl,0);
+    const per=periodDays?periodDays+' ngày gần nhất':'tất cả thời gian';
+    const G=a=>a.map(r=>`  - ${r.name}: ${r.n} lệnh, thắng ${r.wr.toFixed(0)}%, ròng ${r.net>=0?'+':''}${bMoney(r.net)}`).join('\n');
+    return `DỮ LIỆU HIỆU SUẤT BOT (${per})
+Vốn gốc: ${bMoney(base)} · Equity: ${bMoney(lastData&&lastData.equity)} · Số dư: ${bMoney(lastData&&lastData.balance)}
+Tổng lệnh đóng: ${n} · Thắng: ${pct(wins,n).toFixed(1)}% · Lãi/lỗ ròng: ${net>=0?'+':''}${bMoney(net)}
+Theo loại tín hiệu:\n${G(groupBy(h,t=>SIG_LABEL[t.sig]||'—'))}
+Theo thị trường:\n${G(groupBy(h,t=>t.mkt||t.market||'khác'))}
+Theo lý do đóng:\n${G(groupBy(h,t=>t.reason||'—'))}
+Long/Short:\n${G(groupBy(h,t=>t.side||'—'))}
+
+Claude ơi, dựa trên dữ liệu này hãy đề xuất tinh chỉnh tham số bot (risk %, lọc tín hiệu, TP/SL) để tăng tỉ lệ thắng.`;
+  }
+
+  /* nạp/rút */
+  function openTx(mode){ txMode=mode; const dep=mode==='deposit';
+    B('bt_txTitle').textContent=dep?'Nạp tiền':'Rút tiền';
+    B('bt_txLabel').textContent=dep?'Số tiền nạp ($)':'Số tiền rút ($)';
+    const c=B('bt_txConfirm'); c.textContent=dep?'Nạp vào tài khoản':'Rút khỏi tài khoản'; c.className='bt-txconfirm'+(dep?'':' wd');
+    B('bt_txAmt').value=''; B('bt_txMsg').textContent=''; B('botModal').hidden=false; setTimeout(()=>B('bt_txAmt').focus(),80); }
+  function closeTx(){ B('botModal').hidden=true; }
+  async function confirmTx(){
+    const amt=Math.abs(+B('bt_txAmt').value||0), msg=B('bt_txMsg');
+    if(!amt){ msg.textContent='Nhập số tiền đã anh.'; msg.style.color='var(--warn)'; return; }
+    const c=B('bt_txConfirm'); c.disabled=true;
+    try{ const res=await fetch(WORKER_URL.replace(/\/$/,'')+'/'+txMode+'?amt='+amt,{cache:'no-store'}); const d=await res.json();
+      if(d&&d.ok){ closeTx(); load(true); } else { msg.textContent=(d&&d.msg)||'Không thực hiện được.'; msg.style.color='var(--down)'; } }
+    catch(e){ msg.textContent='Mất kết nối worker.'; msg.style.color='var(--down)'; }
+    finally{ c.disabled=false; }
+  }
+
+  function fillCfg(d){
+    if(!d || !d.cfg) return;
+    const r=B('bt_risk'), m=B('bt_marginMax');
+    if(r && document.activeElement!==r && d.cfg.riskPct!=null) r.value=d.cfg.riskPct;
+    if(m && document.activeElement!==m && d.cfg.marginMax!=null) m.value=d.cfg.marginMax;
+    updateCfgHint();
+  }
+  function updateCfgHint(){
+    const m=+B('bt_marginMax').value||0;
+    const eq=(lastData&&lastData.equity)?+lastData.equity:BOT_START;
+    const pv=eq?(m/eq*100):0;
+    B('bt_cfgHint').innerHTML='Vốn tối đa mỗi lệnh ≈ <b>'+pv.toFixed(1)+'%</b> tài khoản — mức ký quỹ lớn nhất bot bỏ vào 1 lệnh.';
+  }
+  async function saveCfg(){
+    const risk=+B('bt_risk').value, mm=+B('bt_marginMax').value;
+    const btn=B('bt_cfgSave'), old='Lưu'; btn.disabled=true; btn.textContent='Đang lưu…';
+    const q=[]; if(risk>0)q.push('risk='+risk); if(mm>0)q.push('marginMax='+Math.round(mm));
+    try{
+      const res=await fetch(WORKER_URL.replace(/\/$/,'')+'/config?'+q.join('&'),{cache:'no-store'});
+      const d=await res.json();
+      if(d&&d.ok){ btn.textContent='Đã lưu ✓'; if(lastData)lastData.cfg=d.cfg; fillCfg({cfg:d.cfg}); }
+      else btn.textContent='Lỗi';
+    }catch(e){ btn.textContent='Mất kết nối'; }
+    finally{ setTimeout(()=>{btn.textContent=old;btn.disabled=false;},1500); }
+  }
+
+  async function load(manual){
+    if(busy) return; busy=true;
+    if(!manual) setStatus('wait','Đang cập nhật…');
+    try{
+      const res=await fetch(WORKER_URL.replace(/\/$/,'')+'/status',{cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const d=await res.json(); lastData=d;
+      renderHero(d); fillCfg(d); renderPositions(d.positions); renderStats(); renderHistory(d.history); hideBanner();
+      setStatus('ok','Cập nhật '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+    }catch(e){ setStatus('bad','Mất kết nối worker'); showBanner(); }
+    finally{ busy=false; }
+  }
+
+  // gọi từ switchTab
+  window.botEnter=function(){ build(); load(false); if(timer)clearInterval(timer); timer=setInterval(()=>load(false),REFRESH_MS); };
+  window.botLeave=function(){ if(timer){clearInterval(timer);timer=null;} };
+
+  // nếu app mở thẳng vào tab Bot (init chạy trước khi module này nạp): tự khởi động
+  document.addEventListener('DOMContentLoaded',function(){
+    var a=document.querySelector('.tab.active');
+    if(a && a.dataset.tab==='bot') window.botEnter();
+  });
+  if(document.readyState!=='loading'){
+    var a=document.querySelector('.tab.active');
+    if(a && a.dataset.tab==='bot' && !built) window.botEnter();
+  }
+})();
 </script>
 </body>
 </html>
