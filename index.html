@@ -157,6 +157,16 @@
 #botView .bt-cfgfield input:focus{border-color:var(--gold)}
 #botView .bt-cfghint{font-size:11.5px;color:var(--mut);margin-top:10px;line-height:1.45}
 #botView .bt-cfghint b{color:var(--gold)}
+#botView .bt-stbtns{display:flex;gap:8px;align-items:center}
+#botView .bt-pause{border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:12px;font-weight:700;padding:6px 12px;border-radius:9px;cursor:pointer;font-family:var(--sans)}
+#botView .bt-pause.paused{border-color:var(--gold);color:var(--gold);background:rgba(232,179,60,.08)}
+#botView .bt-pause:active{transform:scale(.96)}
+#botView .bt-health{font-size:11px;color:var(--mut);font-family:var(--mono);margin:-4px 2px 8px}
+#botView .bt-health b{color:var(--txt)}
+#botView .bt-health .bad{color:var(--down)}
+#botView .bt-close{margin-top:10px;width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--mut);font-size:12px;font-weight:600;padding:9px;border-radius:9px;cursor:pointer;font-family:var(--sans)}
+#botView .bt-close:hover{border-color:var(--down);color:var(--down)}
+#botView .bt-close:active{transform:scale(.98)}
 #botView .bt-mtoggle{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
 #botView .bt-mtoggle button{border:0;background:transparent;color:var(--mut);font-size:12px;font-weight:700;padding:4px 11px;border-radius:6px;cursor:pointer;font-family:var(--sans)}
 #botView .bt-mtoggle button.on{background:var(--gold);color:#0A0F14}
@@ -798,8 +808,9 @@ load();switchTab('bot');updateMini();
   const MARKUP = `
     <div class="bt-status">
       <div class="bt-stwrap"><span class="bt-dot wait" id="bt_dot"></span><span id="bt_stTxt">Đang kết nối…</span></div>
-      <button class="bt-refresh" id="bt_refresh" title="Cập nhật">⟳</button>
+      <div class="bt-stbtns"><button class="bt-pause" id="bt_pause">⏸ Tạm dừng</button><button class="bt-refresh" id="bt_refresh" title="Cập nhật">⟳</button></div>
     </div>
+    <div class="bt-health" id="bt_health"></div>
     <div class="bt-hero">
       <div class="bt-eyebrow">Tổng tài sản · Equity</div>
       <div class="bt-equity"><span id="bt_equity">—</span><span class="bt-cur">$</span></div>
@@ -900,6 +911,7 @@ load();switchTab('bot');updateMini();
       setTimeout(()=>B('bt_copy').textContent='Copy tóm tắt gửi Claude',1600);
     };
     B('bt_cfgSave').onclick = saveCfg;
+    B('bt_pause').onclick = pauseToggle;
     B('bt_marginMax').oninput = updateCfgHint;
     B('bt_mkt').querySelectorAll('button').forEach(b=> b.onclick=()=>{
       B('bt_mkt').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
@@ -936,8 +948,18 @@ load();switchTab('bot');updateMini();
     if(!pos.length){ w.innerHTML='<div class="bt-empty">Bot chưa mở lệnh nào — đang chờ tín hiệu.</div>'; return; }
     w.innerHTML=pos.map(p=>{ const pn=pnlOf(p),up=pn>=0,pp=p.margin?pn/p.margin*100:0,last=(p.last!=null&&!isNaN(p.last))?p.last:p.entry;
       return `<div class="bt-pos"><div class="bt-pos-top"><div class="bt-symwrap"><span class="bt-sd ${p.side==='long'?'long':'short'}">${p.side==='long'?'LONG':'SHORT'}</span><div style="min-width:0"><div class="bt-sy">${p.sym||'—'}</div><div class="bt-mkt">${p.market||''}</div></div></div><div class="bt-pn"><div class="amt ${up?'up':'down'}">${bSigned(pn)} $</div><div class="pp">${(up?'+':'')+pp.toFixed(1)}%</div></div></div>
-      <div class="bt-pgrid"><div class="bt-cell"><div class="k">Vào lệnh</div><div class="v">${bPrice(p.entry)}</div></div><div class="bt-cell"><div class="k">Hiện tại</div><div class="v">${bPrice(last)}</div></div><div class="bt-cell"><div class="k">Cắt lỗ</div><div class="v sl">${bPrice(p.sl)}</div></div><div class="bt-cell"><div class="k">Chốt lời</div><div class="v tp">${bPrice(p.tp1)}</div></div></div></div>`;
+      <div class="bt-pgrid"><div class="bt-cell"><div class="k">Vào lệnh</div><div class="v">${bPrice(p.entry)}</div></div><div class="bt-cell"><div class="k">Hiện tại</div><div class="v">${bPrice(last)}</div></div><div class="bt-cell"><div class="k">Cắt lỗ</div><div class="v sl">${bPrice(p.sl)}</div></div><div class="bt-cell"><div class="k">Chốt lời</div><div class="v tp">${bPrice(p.tp1)}</div></div></div>
+      <button class="bt-close" data-id="${p.id}">Đóng lệnh tay</button></div>`;
     }).join('');
+    w.querySelectorAll('.bt-close').forEach(b=> b.onclick=()=>closePos(b.dataset.id));
+  }
+  async function closePos(id){
+    if(!confirm('Đóng lệnh này ngay theo giá hiện tại?')) return;
+    try{
+      const res=await fetch(WORKER_URL.replace(/\/$/,'')+'/close?id='+encodeURIComponent(id),{cache:'no-store'});
+      const d=await res.json();
+      if(d&&d.ok){ load(true); } else alert('Không đóng được: '+((d&&d.msg)||'lỗi'));
+    }catch(e){ alert('Mất kết nối worker.'); }
   }
   function renderHistory(h){
     h=h||[]; B('bt_histCnt').textContent=h.length?h.length+' mục':'';
@@ -1094,6 +1116,28 @@ Claude ơi, dựa trên dữ liệu này hãy đề xuất tinh chỉnh tham s�
     ctx.fillStyle='#4D9FFF'; ctx.fillText('EMA89',padL+44,12); ctx.fillStyle='#6B7C8C'; ctx.fillText('H4·'+N,padL+84,12);
   }
 
+  function renderHealth(d){
+    const paused=!!(d&&d.cfg&&d.cfg.paused);
+    const pb=B('bt_pause');
+    if(pb){ pb.textContent=paused?'▶ Chạy lại':'⏸ Tạm dừng'; pb.classList.toggle('paused',paused); }
+    const h=B('bt_health'); if(!h) return;
+    const ls=d&&d.lastScan;
+    if(!ls){ h.innerHTML=paused?'<b>ĐÃ TẠM DỪNG</b> — bot không mở lệnh mới':''; return; }
+    const t=ls.at?new Date(ls.at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'—';
+    const errTxt=(ls.errors>0)?`<span class="bad">${ls.errors}/${ls.scanned} lỗi</span>`:`${ls.errors||0}/${ls.scanned||0} lỗi`;
+    h.innerHTML=`Quét ${t} · nguồn <b>${ls.src||'—'}</b> · BTC <b>${ls.btc||'—'}</b> · ${errTxt}`+(paused?' · <b>ĐÃ TẠM DỪNG</b>':'');
+  }
+  async function pauseToggle(){
+    const paused=!!(lastData&&lastData.cfg&&lastData.cfg.paused);
+    const pb=B('bt_pause'); pb.disabled=true;
+    try{
+      const res=await fetch(WORKER_URL.replace(/\/$/,'')+'/config?pause='+(paused?0:1),{cache:'no-store'});
+      const d=await res.json();
+      if(d&&d.ok){ if(lastData)lastData.cfg=d.cfg; renderHealth(lastData); }
+    }catch(e){}
+    finally{ pb.disabled=false; }
+  }
+
   function fillCfg(d){
     if(!d || !d.cfg) return;
     const r=B('bt_risk'), m=B('bt_marginMax');
@@ -1127,7 +1171,7 @@ Claude ơi, dựa trên dữ liệu này hãy đề xuất tinh chỉnh tham s�
       const res=await fetch(WORKER_URL.replace(/\/$/,'')+'/status',{cache:'no-store'});
       if(!res.ok) throw new Error('HTTP '+res.status);
       const d=await res.json(); lastData=d;
-      renderHero(d); fillCfg(d); renderPositions(d.positions); renderStats(); renderHistory(d.history); hideBanner();
+      renderHero(d); fillCfg(d); renderHealth(d); renderPositions(d.positions); renderStats(); renderHistory(d.history); hideBanner();
       setStatus('ok','Cập nhật '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
     }catch(e){ setStatus('bad','Mất kết nối worker'); showBanner(); }
     finally{ busy=false; }
