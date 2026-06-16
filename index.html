@@ -799,7 +799,8 @@ load();switchTab('bot');updateMini();
   const SIG_LABEL = {buy:"Canh mua",vgt:"Vùng giá trị",short:"Short",sw:"Sideway",wait:"Chờ"};
   const BOT_WATCH = {
     crypto:["BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT","ADAUSDT","DOGEUSDT","AVAXUSDT","NEARUSDT","APTUSDT","SUIUSDT","TONUSDT","LINKUSDT","DOTUSDT","LTCUSDT","ATOMUSDT","UNIUSDT","ARBUSDT","OPUSDT","INJUSDT","TIAUSDT","SEIUSDT","AAVEUSDT","FILUSDT","ICPUSDT","ETCUSDT","HBARUSDT","RUNEUSDT","LDOUSDT","IMXUSDT","STXUSDT","FETUSDT","GALAUSDT","SANDUSDT","CRVUSDT","MKRUSDT","SHIBUSDT","PEPEUSDT","WIFUSDT","BONKUSDT"],
-    forex:["XAU/USD","EUR/USD","GBP/USD","USD/JPY","AUD/USD","USD/CAD"]
+    forex:["XAU/USD","EUR/USD","GBP/USD","USD/JPY","AUD/USD","USD/CAD"],
+    stock:["AAPL","MSFT","NVDA","TSLA","AMZN","GOOGL","META","SPY"]
   };
   let botMkt="crypto";
 
@@ -844,7 +845,7 @@ load();switchTab('bot');updateMini();
 
     <div class="bt-sec">
       <div class="bt-sechead"><h3>Xem chart</h3>
-        <div class="bt-mtoggle" id="bt_mkt"><button data-m="crypto" class="on">Crypto</button><button data-m="forex">Vàng/Forex</button></div>
+        <div class="bt-mtoggle" id="bt_mkt"><button data-m="crypto" class="on">Crypto</button><button data-m="forex">Vàng/Forex</button><button data-m="stock">CK Mỹ</button></div>
       </div>
       <select id="bt_symSel" class="bt-symsel"></select>
       <div id="bt_chartCard" class="bt-chartcard"></div>
