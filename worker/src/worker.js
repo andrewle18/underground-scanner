@@ -30,6 +30,8 @@ const CFG = {
   MAX_SUBREQ: 46,       // trần lượt gọi mạng an toàn mỗi lượt chạy (Cloudflare free ~50)
   MIN_BATCH: 6,         // số coin tối thiểu quét mới mỗi lượt
   TD_BUDGET: 8,         // trần lượt gọi Twelve Data mỗi lượt chạy (forex+CK, ~8/phút free)
+  TD_DAILY_CAP: 700,    // trần lượt gọi Twelve Data mỗi NGÀY (gói free 800, chừa 100 dự phòng)
+  TD_NEW_EVERY_MIN: 30, // chỉ quét mã forex/CK MỚI mỗi N phút; mã đang có lệnh vẫn quét mỗi lượt
   // --- v3 (15/10/2026): tinh chỉnh từ phân tích 228 lệnh ---
   EARLY_EXIT: false,    // false = KHÔNG đóng lệnh khi gãy xu hướng, chỉ dời SL về hoà vốn nếu đang lãi.
                         //   Lý do: 115 lệnh "THOÁT SỚM" thắng 1%, lỗ -33.264 (nhánh lỗ lớn nhất hệ thống).
@@ -382,16 +384,42 @@ async function runScan(env){
   const stockOn=(s.cfg&&s.cfg.stockOn!=null)?!!s.cfg.stockOn:CFG.STOCK_ON;   // v3: mặc định tắt CK Mỹ
   const tdAll=[ ...CFG.FOREX.map(sym=>["forex",sym]), ...((usOpen&&stockOn)?CFG.STOCK.map(sym=>["stock",sym]):[]) ];
 
-  // ----- Nhóm TD: giới hạn ~TD_BUDGET lượt/lần để không vượt trần 8/phút -----
+  // ----- Nhóm TD: 2 trần cùng lúc -----
+  //  (a) TD_BUDGET lượt gọi mỗi lần chạy  -> không vượt 8 gọi/phút
+  //  (b) TD_DAILY_CAP lượt gọi mỗi NGÀY   -> không vượt 800 gọi/ngày của gói free
+  // Trước v5: mỗi lượt cron tiêu đúng 8 gọi, cron 15' => 96×8 = 768/ngày, sát trần 800.
+  // Chỉ cần vài lần retry là hết credit và forex chết tới 0h UTC.
+  // Nay: mã ĐANG CÓ LỆNH vẫn quét mỗi lượt (để bắt TP/SL), mã MỚI chỉ quét mỗi
+  // TD_NEW_EVERY_MIN phút — nến H4 bốn tiếng mới đóng, quét mã mới mỗi 15' là thừa.
+  const dayKey=new Date().toISOString().slice(0,10);
+  if(s.tdDay!==dayKey){ s.tdDay=dayKey; s.tdCalls=0; }          // reset theo ngày UTC
+  const tdUsed=s.tdCalls||0;
+
   const tdOpen=tdAll.filter(([m,sym])=>openSyms.has(sym));        // lệnh mở -> luôn quản lý
   const tdPool=tdAll.filter(([m,sym])=>!openSyms.has(sym));       // còn lại -> xoay vòng
-  let tdNewN=Math.max(0, Math.floor((CFG.TD_BUDGET - tdOpen.length*2)/2));
+  const tdEveryMin=(s.cfg&&s.cfg.tdEveryMin!=null)?s.cfg.tdEveryMin:CFG.TD_NEW_EVERY_MIN;
+  const tdBucket=Math.floor(Date.now()/(tdEveryMin*60*1000));
+  const dueForNew = (s.tdBucket!==tdBucket);
+
+  // chừa credit cho lệnh đang mở tới hết ngày; chỉ quét mã mới khi còn dư thoải mái
+  const tdRoomLeft=CFG.TD_DAILY_CAP-tdUsed;
+  const canScanNew = dueForNew && tdRoomLeft > (tdOpen.length*2 + 40);
+
+  let tdNewN = canScanNew ? Math.max(0, Math.floor((CFG.TD_BUDGET - tdOpen.length*2)/2)) : 0;
   s.tdIdx=s.tdIdx||0;
   const tdStart=tdPool.length ? (s.tdIdx % tdPool.length) : 0;
   const tdBatch=[];
   for(let i=0;i<Math.min(tdNewN,tdPool.length);i++) tdBatch.push(tdPool[(tdStart+i)%tdPool.length]);
-  s.tdIdx=tdPool.length ? (tdStart+tdBatch.length)%tdPool.length : 0;
-  const tdTasks=[...tdOpen, ...tdBatch];
+  // Sắp cạn credit: giãn cả việc theo dõi lệnh mở xuống cùng nhịp tdEveryMin, thay vì
+  // để cạn hẳn rồi mù tịt 9 tiếng cuối ngày. Nến H4 + candleHigh/Low vẫn bắt được TP/SL
+  // chạm giữa hai lần quét, nên quét thưa chỉ làm trễ việc ghi nhận, không sai PnL.
+  const tight = tdRoomLeft < 120 && tdOpen.length > 0;
+  const openTasks = (tight && !dueForNew) ? [] : tdOpen;
+  if(tdBatch.length){ s.tdIdx=tdPool.length ? (tdStart+tdBatch.length)%tdPool.length : 0; }
+  if(tdBatch.length || (tight && dueForNew)) s.tdBucket=tdBucket;
+  // cạn hẳn: bỏ cả lệnh mở, tránh gọi vô ích cho tới khi sang ngày mới (0h UTC)
+  const tdTasks = (tdRoomLeft<=0) ? [] : [...openTasks, ...tdBatch];
+  s.tdCalls = tdUsed + tdTasks.length*2;
 
   // ----- Nhóm Crypto (Bybit, không giới hạn/phút): xoay vòng theo trần subrequest CF -----
   const cOpen=cryptoAll.filter(([m,sym])=>openSyms.has(sym));
@@ -457,7 +485,7 @@ async function runScan(env){
   }
 
   s.cryptoSrc=CRYPTO_SRC;
-  s.lastScan={scanned:tasks.length, errors:errCount, at:Date.now(), src:(CRYPTO_SOURCES[CRYPTO_SRC]||{}).name||null, btc:btcRegime, btcErr, errSample, paused, usOpen, td:tdTasks.length};
+  s.lastScan={scanned:tasks.length, errors:errCount, at:Date.now(), src:(CRYPTO_SOURCES[CRYPTO_SRC]||{}).name||null, btc:btcRegime, btcErr, errSample, paused, usOpen, td:tdTasks.length, tdCallsToday:s.tdCalls, tdCapDay:CFG.TD_DAILY_CAP, tdNewScan:tdBatch.length>0};
   await saveState(env,s);
   if(tasks.length && errCount/tasks.length>0.5){ await tg(`⚠️ <b>Cảnh báo dữ liệu</b>: ${errCount}/${tasks.length} mã quét lỗi.\n${btcErr?("BTC: "+btcErr+"\n"):""}${errSample.slice(0,4).join("\n")}`); }
   if(events.length){
