@@ -1,0 +1,16 @@
+# Cấu hình để Cloudflare tự build & deploy mỗi khi repo này có commit mới.
+# QUAN TRỌNG: khi dùng Workers Builds, file này GHI ĐÈ cấu hình trên dashboard,
+# nên KV binding và cron phải khai báo đủ ở đây, nếu không sẽ bị mất khi deploy.
+
+name = "andrew-scanner-bot"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+
+# Ví ảo + lịch sử lệnh (giữ nguyên namespace đang chạy, không tạo mới)
+[[kv_namespaces]]
+binding = "STATE"
+id = "09a4c0e03e624570b33f3be4fdb36ccd"
+
+# Quét mỗi 15 phút
+[triggers]
+crons = ["*/15 * * * *"]
