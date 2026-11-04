@@ -8,7 +8,8 @@ hơn giá trị mặc định trong code). Deploy lại **không** xoá cấu h�
 | Key | Mặc định | Ý nghĩa |
 |---|---|---|
 | `risk` | 2 | % rủi ro mỗi lệnh trên equity |
-| `marginMax` | 100000 | trần ký quỹ mỗi lệnh (hiện đang set 10.000 qua config) |
+| `marginPct` | — | **trần ký quỹ theo % equity** (đặt giá trị này sẽ xoá `marginMax`) |
+| `marginMax` | 100000 | trần ký quỹ tuyệt đối — chỉ dùng khi chưa đặt `marginPct` |
 | `tp1R` | 2.5 | khoảng cách TP1 theo R (1R = \|entry − SL\|) |
 | `tp1Frac` | 0.4 | tỷ lệ chốt tại TP1 |
 | `trailR` | 1.5 | khoảng cách trailing sau TP1, theo R |
@@ -34,6 +35,22 @@ Thua đủ = −1R. Win rate cần để hoà = `1 / (1 + lãi điển hình)`.
 
 Hệ trend-following thực tế thắng 30–40%, nên cấu hình phải nằm ở vùng dưới 40%.
 
+## Trần ký quỹ quyết định risk thật, không phải `risk`
+
+`risk=2` chỉ có hiệu lực khi trần ký quỹ đủ lớn. Ký quỹ cần thiết = `risk% × equity ÷ khoảng cách SL`.
+SL crypto thường cách 7–15%, nên risk 2% đòi ký quỹ 13–29% equity. Trần thấp hơn thế
+là riskPct bị cắt âm thầm.
+
+| `marginPct` | Ký quỹ | Lỗ khi chạm SL (SL cách 10%) | 8 lệnh chiếm |
+|---|---|---|---|
+| (cũ: marginMax 10.000) | 10.000 | 1.027 = **0,10%** | 8% |
+| 5 | 50.000 | 5.135 = 0,51% | 40% |
+| 10 | 100.000 | 10.270 = 1,03% | 80% |
+| 20 | 194.742 | 20.000 = **2,00%** | 160% ⚠ vượt vốn |
+
+Tại 20% thì risk 2% mới thật sự hoạt động, nhưng `MAX_OPEN=8` lệnh sẽ không đủ vốn.
+Muốn risk đúng 2% thì phải giảm `MAX_OPEN` xuống 4–5 trong code.
+
 ## Lịch sử
 
 ### v4 — 25/10/2026 · sửa lỗi cấu trúc RR
@@ -44,6 +61,13 @@ tức **nửa sau bị quét về đúng entry** — trailing 1R bằng đúng k
 - `TP1_MAX_R` 1.2 → **2.5**
 - `TP1_FRAC` 0.5 → **0.4**
 - `TRAIL_R` mới → **1.5**
+
+### v5 — 04/11/2026 · trần ký quỹ theo % equity + endpoint tra ký hiệu
+- Thêm `marginPct`: trần ký quỹ tính theo % equity, co giãn theo tài khoản.
+  `marginMax=10.000` cũ là số cứng khiến risk thật chỉ 0,1% thay vì 2%.
+- Thêm `/sym?q=TON`: tra ký hiệu thật trên Bybit + OKX trước khi thêm coin.
+  Dùng khi một mã báo "bybit rỗng | okx rỗng" — đó là ký hiệu sai, không phải sàn hỏng.
+- Chuyển sang auto-deploy: push lên `main` là Cloudflare tự build (Root directory `worker`).
 
 ### v3 — 15/10/2026 · bỏ THOÁT SỚM, cap TP1
 Phân tích 228 lệnh: nhánh THOÁT SỚM 115 lệnh thắng 1%, lỗ −33.264 — nhánh lỗ lớn nhất.

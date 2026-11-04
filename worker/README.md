@@ -38,5 +38,6 @@ PARAMS.md         tham số hiện tại, lý do chọn, lịch sử tinh chỉn
 | `/check?sym=BTCUSDT` | soi tín hiệu một mã |
 | `/close?id=...` | đóng tay một lệnh |
 | `/deposit?amt=` · `/withdraw?amt=` | nạp/rút ví ảo |
+| `/sym?q=TON` | tra ký hiệu thật trên Bybit + OKX |
 | `/reset` | xoá sạch, về 1.000.000 |
 | `/ping` | kiểm tra bot sống + bắn Telegram |

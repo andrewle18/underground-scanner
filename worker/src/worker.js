@@ -205,7 +205,7 @@ async function loadState(env){
 async function saveState(env,s){ try{await env.STATE.put("paper",JSON.stringify(s));}catch(e){} }
 function equity(s){let v=0;s.positions.forEach(p=>{v+=p.margin+unreal(p);});return s.balance+v;}
 function unreal(p){const d=p.side==="long"?1:-1;return d*(p.last-p.entry)*p.qtyLeft;}
-function getCfg(s){return {riskPct:(s.cfg&&s.cfg.riskPct!=null)?s.cfg.riskPct:CFG.RISK_PCT, marginMax:(s.cfg&&s.cfg.marginMax!=null)?s.cfg.marginMax:Math.round(CFG.START_BALANCE*CFG.MAX_MARGIN_PCT/100), paused:!!(s.cfg&&s.cfg.paused), feePct:(s.cfg&&s.cfg.feePct!=null)?s.cfg.feePct:CFG.FEE_PCT, sigOff:(s.cfg&&Array.isArray(s.cfg.sigOff))?s.cfg.sigOff:[], earlyExit:(s.cfg&&s.cfg.earlyExit!=null)?!!s.cfg.earlyExit:CFG.EARLY_EXIT, tp1R:(s.cfg&&s.cfg.tp1R!=null)?s.cfg.tp1R:CFG.TP1_MAX_R, vgtHoiTu:(s.cfg&&s.cfg.vgtHoiTu!=null)?!!s.cfg.vgtHoiTu:CFG.VGT_NEED_HOITU, stockOn:(s.cfg&&s.cfg.stockOn!=null)?!!s.cfg.stockOn:CFG.STOCK_ON, trailR:(s.cfg&&s.cfg.trailR!=null)?s.cfg.trailR:CFG.TRAIL_R, tp1Frac:(s.cfg&&s.cfg.tp1Frac!=null)?s.cfg.tp1Frac:CFG.TP1_FRAC};}
+function getCfg(s){return {riskPct:(s.cfg&&s.cfg.riskPct!=null)?s.cfg.riskPct:CFG.RISK_PCT, marginMax:(s.cfg&&s.cfg.marginMax!=null)?s.cfg.marginMax:Math.round(CFG.START_BALANCE*CFG.MAX_MARGIN_PCT/100), paused:!!(s.cfg&&s.cfg.paused), feePct:(s.cfg&&s.cfg.feePct!=null)?s.cfg.feePct:CFG.FEE_PCT, sigOff:(s.cfg&&Array.isArray(s.cfg.sigOff))?s.cfg.sigOff:[], earlyExit:(s.cfg&&s.cfg.earlyExit!=null)?!!s.cfg.earlyExit:CFG.EARLY_EXIT, tp1R:(s.cfg&&s.cfg.tp1R!=null)?s.cfg.tp1R:CFG.TP1_MAX_R, vgtHoiTu:(s.cfg&&s.cfg.vgtHoiTu!=null)?!!s.cfg.vgtHoiTu:CFG.VGT_NEED_HOITU, stockOn:(s.cfg&&s.cfg.stockOn!=null)?!!s.cfg.stockOn:CFG.STOCK_ON, trailR:(s.cfg&&s.cfg.trailR!=null)?s.cfg.trailR:CFG.TRAIL_R, tp1Frac:(s.cfg&&s.cfg.tp1Frac!=null)?s.cfg.tp1Frac:CFG.TP1_FRAC, marginPct:(s.cfg&&s.cfg.marginPct!=null)?s.cfg.marginPct:null};}
 function feeFrac(s){return ((s.cfg&&s.cfg.feePct!=null)?s.cfg.feePct:CFG.FEE_PCT)/100;}
 
 // ====== ENGINE ======
@@ -241,7 +241,14 @@ function buildOrder(s,r){
   const lev=CFG.DEFAULT_LEV;
   const eq=equity(s);
   const riskPct  = (s.cfg && s.cfg.riskPct!=null)  ? s.cfg.riskPct  : CFG.RISK_PCT;
-  const marginMax= (s.cfg && s.cfg.marginMax!=null)? s.cfg.marginMax: eq*CFG.MAX_MARGIN_PCT/100;
+  // v5: trần ký quỹ tính theo % EQUITY (co giãn theo tài khoản), ưu tiên hơn marginMax tuyệt đối.
+  // marginMax=10.000 cũ là số cứng, không co giãn, và âm thầm vô hiệu hoá riskPct:
+  // risk 2% của 1M = 20.000, nhưng ký quỹ bị cắt còn 10.000 -> với SL cách 10% thì
+  // lỗ thật mỗi lệnh chỉ 1.000 = 0,1% tài khoản, không phải 2%.
+  const marginPct=(s.cfg && s.cfg.marginPct!=null)? s.cfg.marginPct : null;
+  const marginMax = (marginPct!=null) ? eq*marginPct/100
+                  : (s.cfg && s.cfg.marginMax!=null) ? s.cfg.marginMax
+                  : eq*CFG.MAX_MARGIN_PCT/100;
   const dist=Math.abs(price-sl), riskAmt=eq*riskPct/100;
   const qty=dist>0?riskAmt/dist:0, notional=qty*price;
   let margin=lev>0?notional/lev:notional;
@@ -487,14 +494,38 @@ async function handleHTTP(req,env){
     const tr=url.searchParams.get("trailR"), tf=url.searchParams.get("tp1Frac");
     if(tr!=null&&!isNaN(+tr))s.cfg.trailR=Math.max(0.3,Math.min(5,+tr));
     if(tf!=null&&!isNaN(+tf))s.cfg.tp1Frac=Math.max(0.1,Math.min(0.9,+tf));
+    // v5: marginPct (% equity) — đặt giá trị này sẽ vô hiệu hoá marginMax tuyệt đối
+    const mp=url.searchParams.get("marginPct");
+    if(mp!=null&&!isNaN(+mp)){ s.cfg.marginPct=Math.max(0.1,Math.min(50,+mp)); delete s.cfg.marginMax; }
     await saveState(env,s); return json({ok:true,cfg:getCfg(s)}); }
   if(url.pathname==="/close"){ const id=url.searchParams.get("id"); const s=await loadState(env); const pos=s.positions.find(p=>String(p.id)===String(id)); if(!pos) return json({ok:false,msg:"không tìm thấy lệnh"}); let price=pos.last; try{ if(pos.market==="crypto"){const k=await klinesCrypto(pos.sym,"1h",2);price=k[k.length-1].c;} else {const k=await klinesTwelve(pos.sym,"1h",2);price=k[k.length-1].c;} }catch(e){} const d=pos.side==="long"?1:-1; const pnl=pnlClose(pos,price,false); const rest=d*(price-pos.entry)*pos.qtyLeft; const netApprox=pnl-((pos.fees||0)+feeFrac(s)*pos.qtyLeft*price); closeIt(s,pos,"ĐÓNG TAY",price,pnl,pos.margin,rest,feeFrac(s)); await saveState(env,s); await tg(`✋ <b>ĐÓNG TAY</b> ${pos.sym} ${pos.side.toUpperCase()} @ ${fmt(price)} · ${money(netApprox)}`); return json({ok:true,sym:pos.sym,exit:price,pnl:+netApprox.toFixed(2)}); }
   if(url.pathname==="/check"){ const sym=url.searchParams.get("sym")||"BTCUSDT"; const market=url.searchParams.get("market")||(CFG.STOCK.includes(sym.toUpperCase())?"stock":(sym.includes("/")?"forex":"crypto")); try{ const r=await analyze(market,sym); const s=await loadState(env); const prev=s.lastSig[market+":"+sym]; const already=s.positions.some(p=>p.sym===sym); const actionable=(r.cls==="buy"||r.cls==="vgt"||r.cls==="short"); return json({sym,market,phanLoai:r.cls,nhan:SIG_LABEL[r.cls]||r.cls,H4:r.f4s,H1:r.f1s,sideway:r.sideway,phanKyDinh:!!(r.div&&r.div.phanKy),hoiTuDay:!!(r.div&&r.div.hoiTu),gia:r.price,tinHieuTruoc:prev||null,dangCoLenh:already,conSlot:s.positions.length<CFG.MAX_OPEN,seMoLenh:actionable&&prev!==r.cls&&!already}); }catch(e){ return json({sym,loi:String((e&&e.message)||e)}); } }
   if(url.pathname==="/reset"){ await saveState(env,{balance:CFG.START_BALANCE,start:CFG.START_BALANCE,positions:[],history:[],lastSig:{},scanIdx:0}); return json({ok:true,msg:"đã reset tài khoản"}); }
   if(url.pathname==="/ping"){ await tg("✅ Bot Andrew Le Scanner đang hoạt động."); return json({ok:true}); }
+  // v5: tra ký hiệu thật trên sàn trước khi thêm coin vào danh mục.
+  // Dùng khi một mã báo "bybit rỗng | okx rỗng" — nghĩa là ký hiệu sai, không phải sàn hỏng.
+  if(url.pathname==="/sym"){
+    const q=(url.searchParams.get("q")||"").toUpperCase().trim();
+    if(!q) return json({ok:false,msg:"thiếu ?q= (vd /sym?q=TON)"});
+    const out={q,bybit:[],okx:[]};
+    try{
+      const r=await fetch("https://api.bybit.com/v5/market/instruments-info?category=spot&limit=1000");
+      const j=await r.json();
+      const list=(j&&j.result&&Array.isArray(j.result.list))?j.result.list:[];
+      out.bybit=list.map(x=>x.symbol).filter(s=>s&&s.indexOf(q)>=0).slice(0,25);
+    }catch(e){ out.bybitErr=String((e&&e.message)||e).slice(0,120); }
+    try{
+      const r=await fetch("https://www.okx.com/api/v5/public/instruments?instType=SPOT");
+      const j=await r.json();
+      const list=(j&&Array.isArray(j.data))?j.data:[];
+      out.okx=list.map(x=>x.instId).filter(s=>s&&s.indexOf(q)>=0).slice(0,25);
+    }catch(e){ out.okxErr=String((e&&e.message)||e).slice(0,120); }
+    out.ghiChu="Bot gọi Bybit trước, rồi OKX (tự đổi XXXUSDT -> XXX-USDT), rồi Binance. Mã phải có trên ít nhất một sàn.";
+    return json(out);
+  }
   if(url.pathname==="/deposit"){ const amt=Math.abs(+(url.searchParams.get("amt")||0)); if(!amt) return json({ok:false,msg:"thiếu số tiền"}); const s=await loadState(env); s.balance+=amt; s.start=(s.start||0)+amt; await saveState(env,s); return json({ok:true,balance:s.balance,start:s.start}); }
   if(url.pathname==="/withdraw"){ const amt=Math.abs(+(url.searchParams.get("amt")||0)); if(!amt) return json({ok:false,msg:"thiếu số tiền"}); const s=await loadState(env); if(amt>s.balance) return json({ok:false,msg:"vượt quá số dư khả dụng"}); s.balance-=amt; s.start=Math.max(0,(s.start||0)-amt); await saveState(env,s); return json({ok:true,balance:s.balance,start:s.start}); }
-  return new Response("Andrew Le Scanner bot. Endpoints: /run /status /reset /ping /deposit /withdraw /config /check /close",{headers:{"content-type":"text/plain; charset=utf-8"}});
+  return new Response("Andrew Le Scanner bot. Endpoints: /run /status /reset /ping /deposit /withdraw /config /check /close /sym",{headers:{"content-type":"text/plain; charset=utf-8"}});
 }
 function json(o){return new Response(JSON.stringify(o,null,2),{headers:{"content-type":"application/json; charset=utf-8","Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET, OPTIONS","Access-Control-Allow-Headers":"*"}});}
 
