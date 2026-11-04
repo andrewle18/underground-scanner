@@ -103,8 +103,8 @@ async function klinesTwelve(sym,interval,size){const r=await fetch(`${TWELVE}?sy
 
 // v6: tải nhiều nến H1 bằng cách lùi dần mốc thời gian (Bybit trả tối đa 1000/lần,
 // mới nhất trước). Trả về mảng [t,h,l,c] theo thứ tự thời gian tăng dần.
-async function dumpH1(sym,total){
-  const out=[]; let end=null; let guard=0;
+async function dumpH1(sym,total,endMs){
+  const out=[]; let end=endMs||null; let guard=0;
   while(out.length<total && guard++<6){
     const lim=Math.min(1000,total-out.length);
     let u=`https://api.bybit.com/v5/market/kline?category=spot&symbol=${sym}&interval=60&limit=${lim}`;
@@ -566,14 +566,18 @@ async function handleHTTP(req,env){
   if(url.pathname==="/dump"){
     const syms=(url.searchParams.get("syms")||"").toUpperCase().split(",").map(x=>x.trim()).filter(Boolean);
     const n=Math.max(200,Math.min(5000,+(url.searchParams.get("n")||2000)));
+    // end: mốc thời gian (ms) để lùi về quá khứ — lấy 5000 nến H1 NGAY TRƯỚC mốc này.
+    // Dùng để kéo nhiều giai đoạn liên tiếp, nhờ đó kiểm chứng hệ thống ở cả thị
+    // trường tăng lẫn giảm thay vì chỉ một bối cảnh.
+    const endMs=+(url.searchParams.get("end")||0)||null;
     if(!syms.length) return json({ok:false,msg:"thiếu ?syms=BTCUSDT,ETHUSDT"});
     if(syms.length*Math.ceil(n/1000)>40) return json({ok:false,msg:"quá nhiều: syms × ceil(n/1000) phải ≤ 40"});
     const data={}, errs={};
     for(const sym of syms){
-      try{ data[sym]=await dumpH1(sym,n); }
+      try{ data[sym]=await dumpH1(sym,n,endMs); }
       catch(e){ errs[sym]=String((e&&e.message)||e).slice(0,140); }
     }
-    return json({ok:true,interval:"1h",fields:["t","h","l","c"],n,syms:syms.length,data,errs,at:Date.now()});
+    return json({ok:true,interval:"1h",fields:["t","h","l","c"],n,end:endMs,syms:syms.length,data,errs,at:Date.now()});
   }
   if(url.pathname==="/sym"){
     const q=(url.searchParams.get("q")||"").toUpperCase().trim();
