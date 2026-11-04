@@ -10,8 +10,11 @@ theo hệ thống Underground, tự mở/đóng lệnh trên tài khoản ảo, 
 
 ## Cách deploy
 
-Repo này nối với Cloudflare Workers Builds. **Push lên `main` là Cloudflare tự build
-và deploy**, khoảng 1 phút. Không cần dán code vào dashboard nữa.
+Thư mục này nối với Cloudflare Workers Builds (nối ngày 04/11/2026).
+**Push lên `main` là Cloudflare tự build và deploy**, khoảng 1 phút.
+Không cần dán code vào dashboard nữa.
+
+Cấu hình phía Cloudflare: Root directory `worker` · Deploy command `npx wrangler deploy`.
 
 > **Cảnh báo:** `wrangler.toml` **ghi đè** cấu hình trên dashboard khi deploy.
 > KV binding và cron phải luôn có mặt trong file đó. Xoá nhầm một trong hai thì
