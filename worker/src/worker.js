@@ -251,14 +251,19 @@ function buildOrder(s,r){
       const fibDist=(fibT1!=null)?(fibT1-price):Infinity;
       tp1=price+Math.min(capDist,fibDist);
       tp2=(fibT2!=null&&fibT2>tp1*1.005)?fibT2:((fibT1!=null&&fibT1>tp1*1.005)?fibT1:price+2.5*R);
-      if(!(tp2>tp1))tp2=price+2.5*R;
+      if(!(tp2>tp1*1.005))tp2=price+Math.max(tp1R*2, tp1R+1.5)*R;  // v6: fallback cũ có thể cho tp2 == tp1
     }
     if(!tp1||!(tp1>price)){tp1=price*1.02;tp2=price*1.05;}
   }else{
     const recentHigh=Math.max(...r.h4.slice(-12).map(x=>x.h));
     sl=Math.max(recentHigh, r.e89_1[r.e89_1.length-1]||recentHigh)*1.003;
-    const risk=sl-price;
-    tp1=price-risk; tp2=price-2*risk;
+    // v6: SHORT dùng cùng TP1_MAX_R như long. Trước đây short để TP1 = 1R cố định,
+    // trong khi trailing = 1.5R — rộng hơn cả TP1 — nên sau khi chốt một phần, SL của
+    // short không bao giờ nhích nổi khỏi hoà vốn. Backtest: short trailing 0,40R -> 2,08R.
+    const R=sl-price;
+    const tp1Rs=(s.cfg&&s.cfg.tp1R!=null)?s.cfg.tp1R:CFG.TP1_MAX_R;
+    tp1=price-tp1Rs*R;
+    tp2=price-Math.max(tp1Rs*2, tp1Rs+1.5)*R;
     if(!(tp1>0))tp1=price*0.97;
     if(!(tp2>0))tp2=price*0.94;
   }
