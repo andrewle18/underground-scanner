@@ -101,6 +101,28 @@ async function klinesCrypto(sym,interval,limit){
 }
 async function klinesTwelve(sym,interval,size){const r=await fetch(`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&outputsize=${size}&order=ASC&apikey=${CFG.TWELVE_KEY}`);const j=await r.json();if(j.status==="error"||j.code>=400)throw new Error(j.message||"TD error");if(!j.values)throw new Error("no data");return j.values.map(v=>({h:+v.high,l:+v.low,c:+v.close}));}
 
+// v6: tải nhiều nến H1 bằng cách lùi dần mốc thời gian (Bybit trả tối đa 1000/lần,
+// mới nhất trước). Trả về mảng [t,h,l,c] theo thứ tự thời gian tăng dần.
+async function dumpH1(sym,total){
+  const out=[]; let end=null; let guard=0;
+  while(out.length<total && guard++<6){
+    const lim=Math.min(1000,total-out.length);
+    let u=`https://api.bybit.com/v5/market/kline?category=spot&symbol=${sym}&interval=60&limit=${lim}`;
+    if(end) u+=`&end=${end}`;
+    const r=await fetch(u);
+    if(!r.ok) throw new Error("bybit "+r.status);
+    const j=await r.json();
+    const list=(j&&j.result&&Array.isArray(j.result.list))?j.result.list:[];
+    if(!list.length) break;
+    const rows=list.map(x=>[+x[0],+x[2],+x[3],+x[4]]).sort((a,b)=>a[0]-b[0]); // cũ -> mới
+    out.unshift(...rows);
+    end=rows[0][0]-1;                 // lùi về trước nến cũ nhất vừa lấy
+    if(list.length<lim) break;        // sàn hết dữ liệu
+  }
+  if(!out.length) throw new Error("không có dữ liệu");
+  return out;
+}
+
 // Giờ giao dịch CK Mỹ: 9:30–16:00 giờ New York, T2–T6 (tự xử lý DST qua múi giờ)
 function usMarketOpen(){
   try{
@@ -532,6 +554,22 @@ async function handleHTTP(req,env){
   if(url.pathname==="/ping"){ await tg("✅ Bot Andrew Le Scanner đang hoạt động."); return json({ok:true}); }
   // v5: tra ký hiệu thật trên sàn trước khi thêm coin vào danh mục.
   // Dùng khi một mã báo "bybit rỗng | okx rỗng" — nghĩa là ký hiệu sai, không phải sàn hỏng.
+  // v6: xuất nến H1 thô để backtest ngoài worker.
+  // Chỉ xuất H1 — backtest tự gộp 4 nến H1 thành 1 nến H4, nhờ vậy hai khung
+  // luôn khớp nhau tuyệt đối (không lệch do sàn trả mốc thời gian khác nhau).
+  // /dump?syms=BTCUSDT,ETHUSDT&n=5000   -> n tối đa 5000 nến H1 (~208 ngày)
+  if(url.pathname==="/dump"){
+    const syms=(url.searchParams.get("syms")||"").toUpperCase().split(",").map(x=>x.trim()).filter(Boolean);
+    const n=Math.max(200,Math.min(5000,+(url.searchParams.get("n")||2000)));
+    if(!syms.length) return json({ok:false,msg:"thiếu ?syms=BTCUSDT,ETHUSDT"});
+    if(syms.length*Math.ceil(n/1000)>40) return json({ok:false,msg:"quá nhiều: syms × ceil(n/1000) phải ≤ 40"});
+    const data={}, errs={};
+    for(const sym of syms){
+      try{ data[sym]=await dumpH1(sym,n); }
+      catch(e){ errs[sym]=String((e&&e.message)||e).slice(0,140); }
+    }
+    return json({ok:true,interval:"1h",fields:["t","h","l","c"],n,syms:syms.length,data,errs,at:Date.now()});
+  }
   if(url.pathname==="/sym"){
     const q=(url.searchParams.get("q")||"").toUpperCase().trim();
     if(!q) return json({ok:false,msg:"thiếu ?q= (vd /sym?q=TON)"});
@@ -553,7 +591,7 @@ async function handleHTTP(req,env){
   }
   if(url.pathname==="/deposit"){ const amt=Math.abs(+(url.searchParams.get("amt")||0)); if(!amt) return json({ok:false,msg:"thiếu số tiền"}); const s=await loadState(env); s.balance+=amt; s.start=(s.start||0)+amt; await saveState(env,s); return json({ok:true,balance:s.balance,start:s.start}); }
   if(url.pathname==="/withdraw"){ const amt=Math.abs(+(url.searchParams.get("amt")||0)); if(!amt) return json({ok:false,msg:"thiếu số tiền"}); const s=await loadState(env); if(amt>s.balance) return json({ok:false,msg:"vượt quá số dư khả dụng"}); s.balance-=amt; s.start=Math.max(0,(s.start||0)-amt); await saveState(env,s); return json({ok:true,balance:s.balance,start:s.start}); }
-  return new Response("Andrew Le Scanner bot. Endpoints: /run /status /reset /ping /deposit /withdraw /config /check /close /sym",{headers:{"content-type":"text/plain; charset=utf-8"}});
+  return new Response("Andrew Le Scanner bot. Endpoints: /run /status /reset /ping /deposit /withdraw /config /check /close /sym /dump",{headers:{"content-type":"text/plain; charset=utf-8"}});
 }
 function json(o){return new Response(JSON.stringify(o,null,2),{headers:{"content-type":"application/json; charset=utf-8","Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET, OPTIONS","Access-Control-Allow-Headers":"*"}});}
 
