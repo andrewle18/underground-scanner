@@ -101,6 +101,68 @@ async function klinesCrypto(sym,interval,limit){
 }
 async function klinesTwelve(sym,interval,size){const r=await fetch(`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&outputsize=${size}&order=ASC&apikey=${CFG.TWELVE_KEY}`);const j=await r.json();if(j.status==="error"||j.code>=400)throw new Error(j.message||"TD error");if(!j.values)throw new Error("no data");return j.values.map(v=>({h:+v.high,l:+v.low,c:+v.close}));}
 
+// ====== DỮ LIỆU VĨ MÔ (khung ngày) ======
+// Dùng để kiểm xem biến ngoài có dự báo được chế độ thị trường của BTC hay không —
+// việc mà ba cách lọc bằng chính giá BTC đều đã thất bại.
+// FRED của Fed St. Louis cho CSV công khai, KHÔNG cần khoá API.
+const FRED_SERIES = {
+  fedFunds: "DFF",          // lãi suất quỹ liên bang hiệu dụng, theo ngày
+  oilWTI:   "DCOILWTICO",   // dầu thô WTI giao ngay
+  sp500:    "SP500",        // S&P 500
+  nasdaq:   "NASDAQCOM",    // Nasdaq Composite
+  yield2y:  "DGS2",         // lợi suất trái phiếu 2 năm
+  yield10y: "DGS10",        // lợi suất 10 năm
+  dollar:   "DTWEXBGS",     // chỉ số đô la, rổ rộng
+  vix:      "VIXCLS"        // VIX
+};
+async function fredSeries(id, cutoff){
+  const r = await fetch(`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}`);
+  if(!r.ok) throw new Error("fred "+r.status);
+  const lines = (await r.text()).split("\n");
+  const out = {};
+  for(let i=1;i<lines.length;i++){
+    const c = lines[i].split(",");
+    if(c.length<2) continue;
+    const d = c[0].trim(), v = c[1].trim();
+    if(!d || d < cutoff) continue;            // chuỗi FRED có từ 1954, chỉ giữ phần cần
+    if(v==="." || v==="") continue;           // FRED dùng "." cho ngày không có số liệu
+    const x = +v; if(!isFinite(x)) continue;
+    out[d] = x;
+  }
+  return out;
+}
+async function tdDaily(sym, size, cutoff){
+  const r = await fetch(`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=1day&outputsize=${size}&order=ASC&apikey=${CFG.TWELVE_KEY}`);
+  const j = await r.json();
+  if(j.status==="error" || j.code>=400) throw new Error(j.message||"TD error");
+  if(!j.values) throw new Error("no data");
+  const out = {};
+  for(const v of j.values){
+    const d = String(v.datetime).slice(0,10);
+    if(d < cutoff) continue;
+    const x = +v.close; if(isFinite(x)) out[d] = x;
+  }
+  return out;
+}
+async function btcDaily(total){
+  const out=[]; let end=null, guard=0;
+  while(out.length<total && guard++<4){
+    const lim=Math.min(1000,total-out.length);
+    let u=`https://api.bybit.com/v5/market/kline?category=spot&symbol=BTCUSDT&interval=D&limit=${lim}`;
+    if(end) u+=`&end=${end}`;
+    const r=await fetch(u); if(!r.ok) throw new Error("bybit "+r.status);
+    const j=await r.json();
+    const list=(j&&j.result&&Array.isArray(j.result.list))?j.result.list:[];
+    if(!list.length) break;
+    const rows=list.map(x=>[+x[0],+x[2],+x[3],+x[4]]).sort((a,b)=>a[0]-b[0]);
+    out.unshift(...rows);
+    end=rows[0][0]-1;
+    if(list.length<lim) break;
+  }
+  if(!out.length) throw new Error("không có dữ liệu BTC");
+  return out;
+}
+
 // v6: tải nhiều nến H1 bằng cách lùi dần mốc thời gian (Bybit trả tối đa 1000/lần,
 // mới nhất trước). Trả về mảng [t,h,l,c] theo thứ tự thời gian tăng dần.
 async function dumpH1(sym,total,endMs){
@@ -578,6 +640,25 @@ async function handleHTTP(req,env){
       catch(e){ errs[sym]=String((e&&e.message)||e).slice(0,140); }
     }
     return json({ok:true,interval:"1h",fields:["t","h","l","c"],n,end:endMs,syms:syms.length,data,errs,at:Date.now()});
+  }
+  // /macro?n=1800  -> BTC ngày + 8 chuỗi FRED + vàng, tất cả khung ngày, đã cắt theo n ngày
+  if(url.pathname==="/macro"){
+    const n=Math.max(300,Math.min(3000,+(url.searchParams.get("n")||1800)));
+    const cutoff=new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+    const series={}, errs={};
+    for(const k in FRED_SERIES){
+      try{ series[k]=await fredSeries(FRED_SERIES[k],cutoff); }
+      catch(e){ errs[k]=String((e&&e.message)||e).slice(0,140); }
+    }
+    // vàng: XAU/USD trước, GLD (quỹ ETF vàng) làm phương án dự phòng
+    for(const [k,sym] of [["gold","XAU/USD"],["goldETF","GLD"]]){
+      try{ series[k]=await tdDaily(sym,5000,cutoff); await new Promise(r=>setTimeout(r,1200)); }
+      catch(e){ errs[k]=String((e&&e.message)||e).slice(0,140); }
+    }
+    let btc=[];
+    try{ btc=await btcDaily(n); }catch(e){ errs.btc=String((e&&e.message)||e).slice(0,140); }
+    const cnt={}; for(const k in series) cnt[k]=Object.keys(series[k]).length;
+    return json({ok:true,n,cutoff,btcDays:btc.length,counts:cnt,btc,series,errs,at:Date.now()});
   }
   if(url.pathname==="/sym"){
     const q=(url.searchParams.get("q")||"").toUpperCase().trim();
