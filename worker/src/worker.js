@@ -101,6 +101,88 @@ async function klinesCrypto(sym,interval,limit){
 }
 async function klinesTwelve(sym,interval,size){const r=await fetch(`${TWELVE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&outputsize=${size}&order=ASC&apikey=${CFG.TWELVE_KEY}`);const j=await r.json();if(j.status==="error"||j.code>=400)throw new Error(j.message||"TD error");if(!j.values)throw new Error("no data");return j.values.map(v=>({h:+v.high,l:+v.low,c:+v.close}));}
 
+// ====== HỆ THỐNG SONG SONG: GIỮ BTC + RÚT LUI THEO SMA200 (khung ngày) ======
+// Chạy trên tài khoản ảo RIÊNG (key KV "sma200"), không dính gì tới bot Underground.
+// Mục đích: tích lũy bằng chứng TIẾN cho hai hệ thống trên cùng dữ liệu thật, để sau
+// 6-12 tháng có câu trả lời không do ai chọn hậu nghiệm.
+// Tham số 200 chọn theo QUY ƯỚC, không dò tìm. Không thêm chỉ báo, không tối ưu.
+const SMA_CFG = { PERIOD:200, FEE_PCT:0.05, START:1000000, KEY:"sma200" };
+
+async function loadSma(env){
+  try{ const r=await env.STATE.get(SMA_CFG.KEY); if(r) return JSON.parse(r); }catch(e){}
+  return { cash:SMA_CFG.START, qty:0, inMkt:false, start:SMA_CFG.START,
+           switches:0, history:[], lastDay:null, lastPrice:null, lastSma:null, peakEq:SMA_CFG.START, mdd:0 };
+}
+async function saveSma(env,s){ try{ await env.STATE.put(SMA_CFG.KEY, JSON.stringify(s)); }catch(e){} }
+
+async function btcDailyCloses(limit){
+  const r=await fetch(`https://api.bybit.com/v5/market/kline?category=spot&symbol=BTCUSDT&interval=D&limit=${limit}`);
+  if(!r.ok) throw new Error("bybit "+r.status);
+  const j=await r.json();
+  const list=(j&&j.result&&Array.isArray(j.result.list))?j.result.list:[];
+  return list.map(x=>({t:+x[0],c:+x[4]})).sort((a,b)=>a.t-b.t);   // cũ -> mới
+}
+
+async function runSma(env){
+  const s=await loadSma(env);
+  const today=new Date().toISOString().slice(0,10);
+  if(s.lastDay===today) return s;        // mỗi ngày xử lý một lần -> chỉ tốn 1 subrequest/ngày
+
+  const bars=await btcDailyCloses(SMA_CFG.PERIOD+5);
+  if(bars.length<SMA_CFG.PERIOD+1) return s;
+
+  // BỎ nến ngày đang chạy — quyết định chỉ dựa trên nến ĐÃ ĐÓNG (không nhìn trước)
+  const todayKey=Math.floor(Date.now()/86400000);
+  const closed=bars.filter(b=>Math.floor(b.t/86400000)<todayKey);
+  if(closed.length<SMA_CFG.PERIOD) return s;
+
+  const win=closed.slice(-SMA_CFG.PERIOD);
+  const sma=win.reduce((a,b)=>a+b.c,0)/win.length;
+  const sig=closed[closed.length-1].c > sma;   // tín hiệu từ nến đã đóng
+  const price=bars[bars.length-1].c;           // giá hiện tại = giá thực thi
+  const fee=SMA_CFG.FEE_PCT/100;
+
+  let msg=null;
+  if(sig && !s.inMkt){
+    s.qty=(s.cash*(1-fee))/price; s.cash=0; s.inMkt=true; s.switches++;
+    s.history.unshift({at:Date.now(),act:"VÀO",price,sma,eq:+(s.qty*price).toFixed(2)});
+    msg=`🟢 <b>SMA200 · VÀO BTC</b> @ ${fmt(price)}\nSMA200 ${fmt(sma)} · vốn ${money(s.qty*price)}`;
+  }else if(!sig && s.inMkt){
+    s.cash=s.qty*price*(1-fee); s.qty=0; s.inMkt=false; s.switches++;
+    s.history.unshift({at:Date.now(),act:"RA TIỀN MẶT",price,sma,eq:+s.cash.toFixed(2)});
+    msg=`🔴 <b>SMA200 · RA TIỀN MẶT</b> @ ${fmt(price)}\nSMA200 ${fmt(sma)} · vốn ${money(s.cash)}`;
+  }
+  if(s.history.length>200) s.history.length=200;
+
+  const eq=s.cash+s.qty*price;
+  if(eq>(s.peakEq||0)) s.peakEq=eq;
+  const dd=(eq/(s.peakEq||eq)-1)*100; if(dd<(s.mdd||0)) s.mdd=dd;
+
+  s.lastDay=today; s.lastPrice=price; s.lastSma=sma;
+  await saveSma(env,s);
+  if(msg) await tg(msg);
+  return s;
+}
+
+function smaStatus(s){
+  const eq=s.cash+s.qty*(s.lastPrice||0);
+  return {
+    heThong:"Giữ BTC + rút lui theo SMA200 khung ngày",
+    ghiChu:"Tham số 200 chọn theo quy ước, không dò tìm. Chạy song song để so sánh với bot Underground.",
+    trangThai: s.inMkt?"ĐANG GIỮ BTC":"ĐANG Ở TIỀN MẶT",
+    vonHienTai:+eq.toFixed(2),
+    vonBanDau:s.start,
+    loiNhuanPct:+((eq/s.start-1)*100).toFixed(2),
+    sutGiamToiDaPct:+(s.mdd||0).toFixed(2),
+    giaBTC:s.lastPrice,
+    sma200:s.lastSma?+s.lastSma.toFixed(2):null,
+    chenhLechPct:(s.lastPrice&&s.lastSma)?+((s.lastPrice/s.lastSma-1)*100).toFixed(2):null,
+    soLanDoiViThe:s.switches||0,
+    capNhatNgay:s.lastDay,
+    lichSu:(s.history||[]).slice(0,20)
+  };
+}
+
 // ====== DỮ LIỆU VĨ MÔ (khung ngày) ======
 // Dùng để kiểm xem biến ngoài có dự báo được chế độ thị trường của BTC hay không —
 // việc mà ba cách lọc bằng chính giá BTC đều đã thất bại.
@@ -642,6 +724,17 @@ async function handleHTTP(req,env){
     return json({ok:true,interval:"1h",fields:["t","h","l","c"],n,end:endMs,syms:syms.length,data,errs,at:Date.now()});
   }
   // /macro?n=1800  -> BTC ngày + 8 chuỗi FRED + vàng, tất cả khung ngày, đã cắt theo n ngày
+  // /sma -> trạng thái hệ thống song song;  /sma?run=1 -> chạy ngay (bỏ chốt một-lần-mỗi-ngày)
+  if(url.pathname==="/sma"){
+    let s=await loadSma(env);
+    if(url.searchParams.get("run")==="1"){ s.lastDay=null; await saveSma(env,s); s=await runSma(env); }
+    return json({ok:true,...smaStatus(s)});
+  }
+  if(url.pathname==="/sma-reset"){
+    await saveSma(env,{cash:SMA_CFG.START,qty:0,inMkt:false,start:SMA_CFG.START,
+      switches:0,history:[],lastDay:null,lastPrice:null,lastSma:null,peakEq:SMA_CFG.START,mdd:0});
+    return json({ok:true,msg:"đã reset tài khoản SMA200"});
+  }
   if(url.pathname==="/macro"){
     const n=Math.max(300,Math.min(3000,+(url.searchParams.get("n")||1800)));
     const cutoff=new Date(Date.now()-n*86400000).toISOString().slice(0,10);
@@ -681,12 +774,12 @@ async function handleHTTP(req,env){
   }
   if(url.pathname==="/deposit"){ const amt=Math.abs(+(url.searchParams.get("amt")||0)); if(!amt) return json({ok:false,msg:"thiếu số tiền"}); const s=await loadState(env); s.balance+=amt; s.start=(s.start||0)+amt; await saveState(env,s); return json({ok:true,balance:s.balance,start:s.start}); }
   if(url.pathname==="/withdraw"){ const amt=Math.abs(+(url.searchParams.get("amt")||0)); if(!amt) return json({ok:false,msg:"thiếu số tiền"}); const s=await loadState(env); if(amt>s.balance) return json({ok:false,msg:"vượt quá số dư khả dụng"}); s.balance-=amt; s.start=Math.max(0,(s.start||0)-amt); await saveState(env,s); return json({ok:true,balance:s.balance,start:s.start}); }
-  return new Response("Andrew Le Scanner bot. Endpoints: /run /status /reset /ping /deposit /withdraw /config /check /close /sym /dump",{headers:{"content-type":"text/plain; charset=utf-8"}});
+  return new Response("Andrew Le Scanner bot. Endpoints: /run /status /reset /ping /deposit /withdraw /config /check /close /sym /dump /sma",{headers:{"content-type":"text/plain; charset=utf-8"}});
 }
 function json(o){return new Response(JSON.stringify(o,null,2),{headers:{"content-type":"application/json; charset=utf-8","Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET, OPTIONS","Access-Control-Allow-Headers":"*"}});}
 
 // ====== ENTRY ======
 export default {
-  async scheduled(event, env, ctx){ ctx.waitUntil(runScan(env)); },
+  async scheduled(event, env, ctx){ ctx.waitUntil(runSma(env).catch(()=>{}).then(()=>runScan(env))); },
   async fetch(req, env, ctx){ return handleHTTP(req,env); }
 };
